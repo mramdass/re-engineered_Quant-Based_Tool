@@ -1,4 +1,0 @@
-Minor issues:
-	If all REPs are INC, do not include that row (or locus) in the case.csv
-	If all REPs are NEG, do not include that row (or locus) in the case.csv
-	The likelihood ratio for that locus will be 1 anyway.
