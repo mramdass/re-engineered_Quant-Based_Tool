@@ -2,7 +2,7 @@
 //	This tool can be used to achieve likelihood ratio for suspect(s) and/or victim(s) in a DNA mixture using probabilistic genotyping
 //	Legal Aid Statistical Tool Copyright (C) 2015 Munieshwar Ramdass, Nicholas J. Corpuz, Khagay Nagdimov
 //	
-//	This program is free software: you can redistribute it and/or modify it
+//	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
 //	the Free Software Foundation, either version 3 of the License, or
 //	(at your option) any later version.
@@ -60,10 +60,8 @@
 #include <stdarg.h>
 
 typedef std::string String;								// The following typedef used for CSV as a means of convinience
-typedef std::vector<String> CSVRow;
-typedef CSVRow::const_iterator CSVRowCI;
-typedef std::vector<CSVRow> CSVDatabase;
-typedef CSVDatabase::const_iterator CSVDatabaseCI;
+typedef std::vector<String> csv_row;
+typedef std::vector<csv_row> csv_database;
 
 using namespace std;
 
@@ -407,28 +405,28 @@ public:
 		ofs3.close();
 	}
 
-	void permute_vector(const vector<int>& elems, unsigned long req_len, vector<unsigned long>& pos, unsigned long depth, unsigned long margin) {
-		if (depth >= req_len) {
+	void permute_vector(const vector<int>& number_items, unsigned int length, vector<unsigned int>& position, unsigned int depth, unsigned int perimeter) {
+		if (depth >= length) {
 			vector<int> index_vector;
 
-			for (unsigned long ii = 0; ii < pos.size(); ++ii) {
-				index_vector.push_back(elems[pos[ii]]);
+			for (unsigned int i = 0; i < position.size(); ++i) {
+				index_vector.push_back(number_items[position[i]]);
 			}
 			indicies.push_back(index_vector);
 			return;
 		}
 
-		for (unsigned long ii = 0; ii < elems.size(); ++ii) { // CHANGE ii TO margin TO MAKE THIS A COMBINATION WITH REPETITION
-			pos[depth] = ii;
-			permute_vector(elems, req_len, pos, depth + 1, ii);
+		for (unsigned int i = 0; i < number_items.size(); ++i) { // CHANGE i TO perimeter TO MAKE THIS A COMBINATION WITH REPETITION
+			position[depth] = i;
+			permute_vector(number_items, length, position, depth + 1, i);
 		}
 		return;
 	}
 
-	void permute_vector_driver(const vector<int>& elems, unsigned long req_len) {
-		assert(req_len > 0 && req_len <= elems.size());
-		vector<unsigned long> positions(req_len, 0);
-		permute_vector(elems, req_len, positions, 0, 0);
+	void permute_vector_driver(const vector<int>& number_items, unsigned int length) {
+		assert(length > 0 && length <= number_items.size());
+		vector<unsigned int> positions(length, 0);
+		permute_vector(number_items, length, positions, 0, 0);
 	}
 
 	void generate_population() {		// Generates all combinaions of genotypes
@@ -744,9 +742,9 @@ double generate_wild_allele_freq(vector<Allele>& alleles) {
 	return c;
 }
 
-// Parameters: CSVDatabase& db, string& locus, double length, char race
+// Parameters: csv_database& db, string& locus, double length, char race
 // Returns double
-double get_input_freq(CSVDatabase& db, string& locus, double length, char race) {
+double get_input_freq(csv_database& db, string& locus, double length, char race) {
 	for (int i(0); i < db.size(); ++i) {
 		for (int j(0); j < db[i].size(); ++j) {
 			if (db[i][j] == locus && atof(db[i][j + 1].c_str()) == length && race == 'b')
@@ -763,9 +761,9 @@ double get_input_freq(CSVDatabase& db, string& locus, double length, char race) 
 	return 0.0;
 }
 
-// Paramters: CSVDatabase& db, string locus, string length, char race
+// Paramters: csv_database& db, string locus, string length, char race
 // Returns string
-string get_input_freq_string(CSVDatabase& db, string locus, string length, char race) {		// Not used
+string get_input_freq_string(csv_database& db, string locus, string length, char race) {		// Not used
 	for (int i(0); i < db.size(); ++i) {
 		for (int j(0); j < db[i].size(); ++j) {
 			if (db[i][j] == locus && db[i][j + 1] == length && race == 'b')
@@ -782,14 +780,14 @@ string get_input_freq_string(CSVDatabase& db, string locus, string length, char 
 	return str;
 }
 
-// Parameters: CSVDatabase& db, string db_name
+// Parameters: csv_database& db, string db_name
 // Returns double (0.0 or 1.0)
-double read_csv(CSVDatabase& db, string db_name) {
+double read_csv(csv_database& db, string db_name) {
 	ifstream ifs(db_name);
 	String csvLine;
 	while (getline(ifs, csvLine)) {
 		istringstream csvStream(csvLine);
-		CSVRow csvRow;
+		csv_row csvRow;
 		String csvCol;
 		while (getline(csvStream, csvCol, ','))
 			csvRow.push_back(csvCol);
@@ -799,15 +797,15 @@ double read_csv(CSVDatabase& db, string db_name) {
 	return true;
 }
 
-// Parameters: CSVDatabase& db, string db_name, int rows
+// Parameters: csv_database& db, string db_name, int rows
 // Returns double (0.0 or 1.0)
-double read_csv_x_rows(CSVDatabase& db, string db_name, int rows) {		// Reads x number of rows rows only
+double read_csv_x_rows(csv_database& db, string db_name, int rows) {		// Reads x number of rows rows only
 	ifstream ifs(db_name);
 	String csvLine;
 	int i(1);
 	while (getline(ifs, csvLine)) {
 		istringstream csvStream(csvLine);
-		CSVRow csvRow;
+		csv_row csvRow;
 		String csvCol;
 		while (getline(csvStream, csvCol, ','))
 			csvRow.push_back(csvCol);
@@ -819,9 +817,9 @@ double read_csv_x_rows(CSVDatabase& db, string db_name, int rows) {		// Reads x 
 	return true;
 }
 
-// Parameters: CSVDatabase& db, CSVDatabase& adb, vector<vector<Allele>>& a, vector<Allele>& b, int& c, double& q, char race
+// Parameters: csv_database& db, csv_database& adb, vector<vector<Allele>>& a, vector<Allele>& b, int& c, double& q, char race
 // Returns vector<Person>
-vector<vector<Person>> get_data(CSVDatabase& db, CSVDatabase& adb, vector<vector<Allele>>& a, vector<Allele>& b, int& c, double& q, char race) {
+vector<vector<Person>> get_data(csv_database& db, csv_database& adb, vector<vector<Allele>>& a, vector<Allele>& b, int& c, double& q, char race) {
 	string locus;
 	string name("Known");
 	vector<Allele> s_tmp;	// Numerator (Pn) Knowns
