@@ -1,4 +1,4 @@
-#LAST
+# LAST
 This tool can be used to achieve likelihood ratio for suspect(s) and/or victim(s) in a DNA mixture using probabilistic genotyping
 Legal Aid Statistical Tool Copyright (C) 2015 Munieshwar Ramdass, Nicholas J. Corpuz, Khagay Nagdimov
 
