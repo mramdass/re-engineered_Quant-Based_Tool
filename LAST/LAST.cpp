@@ -86,11 +86,11 @@ private:
 
 int FILE_NUM = 1;
 int RACE = 1;
-const double HOM_CONST = 0.03;	// inbreed constant - THETA
+double HOM_CONST = 0.00;	// inbreed - THETA
 
-double PC0 = 0.96;			// Drop-in rates
-double PC1 = 0.035;			// Not constant
-double PC2 = 0.005;			// Initialized to low copy values
+double PC0 = 0.0;			// Drop-in rates
+double PC1 = 0.0;			// Not constant
+double PC2 = 0.0;
 
 double PHET0 = 0.0;			// Drop-out rates
 double PHET1 = 0.0;			// Not constant
@@ -99,7 +99,7 @@ double PHOM0 = 0.0;
 double PHOM1 = 0.0;
 
 bool DEDUCIBLE = false;
-double QUANT = 12.5;
+double QUANT = 25.0;
 
 class Genotype_Combination;
 class Person;
@@ -358,11 +358,14 @@ public:
 		}
 
 		ofs << ",HET0:," << PHET0 << ",,pC0:," << PC0 << "\n,HET1:," << PHET1 << ",,pC1:," << PC1
-			<< "\n,HET2:," << PHET2 << ",,pC2:," << PC2 << "\n,HOM0:," << PHOM0 << "\n,HOM1:," << PHOM1 << endl;
+			<< "\n,HET2:," << PHET2 << ",,pC2:," << PC2 << "\n,HOM0:," << PHOM0 << "\n,HOM1:," << PHOM1
+			<< ",,Theta:," << HOM_CONST << endl;
 		ofs2 << ",HET0:," << PHET0 << ",,pC0:," << PC0 << "\n,HET1:," << PHET1 << ",,pC1:," << PC1
-			<< "\n,HET2:," << PHET2 << ",,pC2:," << PC2 << "\n,HOM0:," << PHOM0 << "\n,HOM1:," << PHOM1 << endl;
+			<< "\n,HET2:," << PHET2 << ",,pC2:," << PC2 << "\n,HOM0:," << PHOM0 << "\n,HOM1:," << PHOM1
+			<< ",,Theta:," << HOM_CONST << endl;
 		ofs3 << "\tHET0:\t" << PHET0 << "\t\tpC0:\t" << PC0 << "\n\tHET1:\t" << PHET1 << "\t\tpC1:\t" << PC1
-			<< "\n\tHET2:\t" << PHET2 << "\t\tpC2:\t" << PC2 << "\n\tHOM0:\t" << PHOM0 << "\n\tHOM1:\t" << PHOM1 << endl;
+			<< "\n\tHET2:\t" << PHET2 << "\t\tpC2:\t" << PC2 << "\n\tHOM0:\t" << PHOM0 << "\n\tHOM1:\t" << PHOM1
+			<< "\t\tTheta:\t" << HOM_CONST << endl;
 
 		ofs << ",\nLocus:," << s[0].a.locus << ",,Quant:," << QUANT << ",,Deducible:," << DEDUCIBLE << endl;
 		ofs2 << ",\nLocus:," << s[0].a.locus << ",,Quant:," << QUANT << ",,Deducible:," << DEDUCIBLE << endl;
@@ -923,15 +926,41 @@ double run_LAST(vector<vector<string>>& allele_database, vector<vector<string>>&
 	double quant(100.0);
 	string dnd("ND");
 	vector<vector<Person>> knowns = get_data(evidence_database, allele_database, replicates, alleles, contributors, quant, race);
+	
+	double low_copy_pC0(0.0), low_copy_pC1(0.0), low_copy_pC2(0.0), high_copy_pC0(0.0), high_copy_pC1(0.0), high_copy_pC2(0.0), theta(0.0);
+	vector<vector<string>> drop_in_database;
+	vector<string> drop_in_col(7);
+	drop_in_database.push_back(drop_in_col);
+	drop_in_database.push_back(drop_in_col);
+	read_csv(drop_in_database, "Drop_In_Rates.csv");
+	for (int i(0); i < drop_in_database.size(); ++i) {
+		for (int j(0); j < drop_in_database[i].size(); ++j) {
+			if (drop_in_database[i][j] == "LPC0")
+				low_copy_pC0 = atof(drop_in_database[i][j + 1].c_str());
+			else if (drop_in_database[i][j] == "LPC1")
+				low_copy_pC1 = atof(drop_in_database[i][j + 1].c_str());
+			else if (drop_in_database[i][j] == "LPC2")
+				low_copy_pC2 = atof(drop_in_database[i][j + 1].c_str());
+			else if (drop_in_database[i][j] == "HPC0")
+				high_copy_pC0 = atof(drop_in_database[i][j + 1].c_str());
+			else if (drop_in_database[i][j] == "HPC1")
+				high_copy_pC1 = atof(drop_in_database[i][j + 1].c_str());
+			else if (drop_in_database[i][j] == "HPC2")
+				high_copy_pC2 = atof(drop_in_database[i][j + 1].c_str());
+			else if (drop_in_database[i][j] == "THETA")
+				theta = atof(drop_in_database[i][j + 1].c_str());
+		}
+	}
+	HOM_CONST = theta;
 	if (quant <= 100) {		// QUANT of 100 will be run as low copy
-		PC0 = 0.96;
-		PC1 = 0.035;
-		PC2 = 0.005;
+		PC0 = low_copy_pC0;
+		PC1 = low_copy_pC1;
+		PC2 = low_copy_pC2;
 	}
 	else {
-		PC0 = 0.975;
-		PC1 = 0.02;
-		PC2 = 0.005;
+		PC0 = high_copy_pC0;
+		PC1 = high_copy_pC1;
+		PC2 = high_copy_pC2;
 	}
 
 	if (quant < 6.25 && contributors == 1) {
@@ -1116,7 +1145,7 @@ int main() {
 
 	cout << "///////////////////////////////////////////////////////" << endl;
 	cout << "//" << endl;
-	cout << "//\tWELCOME TO LEGAL AID STATISTICAL TOOL" << endl;
+	cout << "//\tPROGRAM HAS BEEN INITIALIZED AND IS RUNNING" << endl;
 	cout << "//" << endl;
 	cout << "//" << endl;
 	cout << "\n________________________________________________\n" << endl;
