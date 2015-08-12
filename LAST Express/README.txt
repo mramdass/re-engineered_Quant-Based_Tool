@@ -1,6 +1,6 @@
-# LAST
+# PGP
 This tool can be used to achieve likelihood ratio for suspect(s) and/or victim(s) in a DNA mixture using probabilistic genotyping
-Legal Aid Statistical Tool Copyright (C) 2015 Munieshwar Ramdass, Nicholas J. Corpuz, Khagay Nagdimov
+Probabilistic Genotyping Program Copyright (C) 2015 Munieshwar Ramdass, Nicholas J. Corpuz, Khagay Nagdimov
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
