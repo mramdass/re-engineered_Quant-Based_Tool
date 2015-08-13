@@ -17,7 +17,7 @@
 //
 
 //
-//	Legal Aid Statistical Tool (LAST)
+//	Probabilistic Genotyping Program (PGP)
 //	
 //	Team:	Clinton Hughes		(Supervisor)
 //			Munieshwar Ramdass	(C++ Programmer)
