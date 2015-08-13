@@ -21,8 +21,8 @@
 //	
 //	Team:	Clinton Hughes		(Supervisor)
 //			Munieshwar Ramdass	(C++ Programmer)
-//			Nicolas Corpuz		(GUI, R Programmer)
-//			Khagay Nagdimov		(GUI, R Programmer)
+//			Nicolas Corpus		(GUI, R Programmer)
+//			Khaguy Nagdimov		(GUI, R Programmer)
 //			
 //	June 2nd, 2015 - August 14th, 2015
 //
@@ -100,6 +100,8 @@ double PHOM1 = 0.0;
 
 bool DEDUCIBLE = false;
 double QUANT = 25.0;
+
+double MINIMUM_WILD_FREQUENCY = 0.001;	// Not constant
 
 class Genotype_Combination;
 class Person;
@@ -463,9 +465,9 @@ public:
 		double sum_d(0.0);
 		double prod_d(1.0);
 
-		//ofstream ofs;
-		//ofs.open("Evidence_" + to_string(FILE_NUM) + ".csv", ios::app);
-		//ofs << endl;
+		ofstream ofs;
+		ofs.open("Evidence_" + to_string(FILE_NUM) + ".csv", ios::app);
+		ofs << endl;
 		for (int ii(0); ii < persons.size(); ++ii) {
 			for (int i(0); i < population_t.size(); ++i) {
 				if (population_t[i][0] == persons[ii] && is_subset(i)) { // First if-statement from LASTv3
@@ -478,7 +480,7 @@ public:
 						if (j >= unknowns - (unknowns - d.size()))
 							prod_d *= population_t[i][j].freq;
 
-						//ofs << population_t[i][j].freq << ",";
+						ofs << population_t[i][j].freq << ",";
 					}
 					for (int j(0); j < population_t[i].size(); ++j) {
 						for (int k(0); k < rep_alleles.size(); ++k) {
@@ -486,7 +488,7 @@ public:
 							s_prod = prod;
 							prod_d *= drop_out(population_t[i][j], rep_alleles[k]);
 
-							//ofs << drop_out(population_t[i][j], rep_alleles[k]) << ",";
+							ofs << drop_out(population_t[i][j], rep_alleles[k]) << ",";
 						}
 					}
 					for (int j(0); j < rep_alleles.size(); ++j) {
@@ -494,11 +496,11 @@ public:
 						s_prod = prod;
 						prod_d *= drop_in(population_t[i], rep_alleles[j]);
 
-						//ofs << drop_in(population_t[i], rep_alleles[j]) << ",";
+						ofs << drop_in(population_t[i], rep_alleles[j]) << ",";
 					}
 					sum += prod;
 					//sum_d += prod_d;									// Used in LASTv3 with (if, if-else) statement
-					//ofs << "," << prod << "," << prod_d << endl;
+					ofs << "," << prod << "," << prod_d << endl;
 					prod = 1.0;
 					prod_d = 1.0;
 
@@ -514,25 +516,25 @@ public:
 						if (j >= unknowns - (unknowns - d.size()))
 							prod_d *= population_t[i][j].freq;
 
-						//ofs << population_t[i][j].freq << ",";
+						ofs << population_t[i][j].freq << ",";
 					}
 					for (int j(0); j < population_t[i].size(); ++j) {
 						for (int k(0); k < rep_alleles.size(); ++k) {
 							prod *= drop_out(population_t[i][j], rep_alleles[k]);
 							prod_d *= drop_out(population_t[i][j], rep_alleles[k]);
 
-							//ofs << drop_out(population_t[i][j], rep_alleles[k]) << ",";
+							ofs << drop_out(population_t[i][j], rep_alleles[k]) << ",";
 						}
 					}
 					for (int j(0); j < rep_alleles.size(); ++j) {
 						prod *= drop_in(population_t[i], rep_alleles[j]);
 						prod_d *= drop_in(population_t[i], rep_alleles[j]);
 
-						//ofs << drop_in(population_t[i], rep_alleles[j]) << ",";
+						ofs << drop_in(population_t[i], rep_alleles[j]) << ",";
 					}
 					sum += prod;
 					sum_d += prod_d;
-					//ofs << "," << prod << "," << prod_d << endl;
+					ofs << "," << prod << "," << prod_d << endl;
 					prod = 1.0;
 					prod_d = 1.0;
 				}
@@ -548,8 +550,8 @@ public:
 			LRs.push_back(numerators[i] / denominator_sum);
 		}
 
-		//ofs << endl;
-		//ofs.close();
+		ofs << endl;
+		ofs.close();
 	}
 
 	double drop_out(Person p, vector<Allele>& v) {		// Determining drop-out rate for a specific genotype (Person p)
@@ -741,7 +743,7 @@ double generate_wild_allele_freq(vector<Allele>& alleles) {
 		c -= alleles[i].get_freq();
 	}
 	if (c < 0)
-		c = 0.007;	// Minimum WILD frequency?
+		c = MINIMUM_WILD_FREQUENCY;
 	return c;
 }
 
@@ -926,8 +928,8 @@ double run_LAST(vector<vector<string>>& allele_database, vector<vector<string>>&
 	double quant(100.0);
 	string dnd("ND");
 	vector<vector<Person>> knowns = get_data(evidence_database, allele_database, replicates, alleles, contributors, quant, race);
-	
-	double low_copy_pC0(0.0), low_copy_pC1(0.0), low_copy_pC2(0.0), high_copy_pC0(0.0), high_copy_pC1(0.0), high_copy_pC2(0.0), theta(0.0);
+
+	double low_copy_pC0(0.0), low_copy_pC1(0.0), low_copy_pC2(0.0), high_copy_pC0(0.0), high_copy_pC1(0.0), high_copy_pC2(0.0), theta(0.0), min_w(0.0);
 	vector<vector<string>> drop_in_database;
 	vector<string> drop_in_col(7);
 	drop_in_database.push_back(drop_in_col);
@@ -949,9 +951,12 @@ double run_LAST(vector<vector<string>>& allele_database, vector<vector<string>>&
 				high_copy_pC2 = atof(drop_in_database[i][j + 1].c_str());
 			else if (drop_in_database[i][j] == "THETA")
 				theta = atof(drop_in_database[i][j + 1].c_str());
+			else if (drop_in_database[i][j] == "MIN-W")
+				min_w = atof(drop_in_database[i][j + 1].c_str());
 		}
 	}
 	HOM_CONST = theta;
+	MINIMUM_WILD_FREQUENCY = min_w;
 	if (quant <= 100) {		// QUANT of 100 will be run as low copy
 		PC0 = low_copy_pC0;
 		PC1 = low_copy_pC1;
