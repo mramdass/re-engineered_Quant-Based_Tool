@@ -1,5 +1,6 @@
 # LAST
 This tool can be used to achieve likelihood ratio for suspect(s) and/or victim(s) in a DNA mixture using probabilistic genotyping
+
 Probabilistic Genotyping Program Copyright (C) 2015 Munieshwar Ramdass, Nicholas J. Corpuz, Khagay Nagdimov
 
 This program is free software: you can redistribute it and/or modify
@@ -14,5 +15,3 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-Research and develop probabilistic genotyping software in forensic DNA testing and casework. Devise a method for detecting the false positive rate for any potential genotype to a complex DNA mixture. Logic implemented in C++. GUI implemented in R. Made to replicate OCME's Forensic Statistical Tool (FST).
