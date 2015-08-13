@@ -1,6 +1,6 @@
 //	
 //	This tool is meant to be used to generate evidence files for LAST
-//	LAST Evidence File Generator (C) 2015 Munieshwar Ramdass
+//	PGP Evidence File Generator (C) 2015 Munieshwar Ramdass
 //	
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 //
 
 //
-//	LAST Evidence File Generator
+//	PGP Evidence File Generator
 //	Munieshwar Ramdass	(C++ Programmer)
 //	July 31, 2015
 //
