@@ -465,9 +465,9 @@ public:
 		double sum_d(0.0);
 		double prod_d(1.0);
 
-		ofstream ofs;
-		ofs.open("Evidence_" + to_string(FILE_NUM) + ".csv", ios::app);
-		ofs << endl;
+		//ofstream ofs;
+		//ofs.open("Evidence_" + to_string(FILE_NUM) + ".csv", ios::app);
+		//ofs << endl;
 		for (int ii(0); ii < persons.size(); ++ii) {
 			for (int i(0); i < population_t.size(); ++i) {
 				if (population_t[i][0] == persons[ii] && is_subset(i)) { // First if-statement from LASTv3
@@ -480,7 +480,7 @@ public:
 						if (j >= unknowns - (unknowns - d.size()))
 							prod_d *= population_t[i][j].freq;
 
-						ofs << population_t[i][j].freq << ",";
+						//ofs << population_t[i][j].freq << ",";
 					}
 					for (int j(0); j < population_t[i].size(); ++j) {
 						for (int k(0); k < rep_alleles.size(); ++k) {
@@ -488,7 +488,7 @@ public:
 							s_prod = prod;
 							prod_d *= drop_out(population_t[i][j], rep_alleles[k]);
 
-							ofs << drop_out(population_t[i][j], rep_alleles[k]) << ",";
+							//ofs << drop_out(population_t[i][j], rep_alleles[k]) << ",";
 						}
 					}
 					for (int j(0); j < rep_alleles.size(); ++j) {
@@ -496,11 +496,11 @@ public:
 						s_prod = prod;
 						prod_d *= drop_in(population_t[i], rep_alleles[j]);
 
-						ofs << drop_in(population_t[i], rep_alleles[j]) << ",";
+						//ofs << drop_in(population_t[i], rep_alleles[j]) << ",";
 					}
 					sum += prod;
 					//sum_d += prod_d;									// Used in LASTv3 with (if, if-else) statement
-					ofs << "," << prod << "," << prod_d << endl;
+					//ofs << "," << prod << "," << prod_d << endl;
 					prod = 1.0;
 					prod_d = 1.0;
 
@@ -516,25 +516,25 @@ public:
 						if (j >= unknowns - (unknowns - d.size()))
 							prod_d *= population_t[i][j].freq;
 
-						ofs << population_t[i][j].freq << ",";
+						//ofs << population_t[i][j].freq << ",";
 					}
 					for (int j(0); j < population_t[i].size(); ++j) {
 						for (int k(0); k < rep_alleles.size(); ++k) {
 							prod *= drop_out(population_t[i][j], rep_alleles[k]);
 							prod_d *= drop_out(population_t[i][j], rep_alleles[k]);
 
-							ofs << drop_out(population_t[i][j], rep_alleles[k]) << ",";
+							//ofs << drop_out(population_t[i][j], rep_alleles[k]) << ",";
 						}
 					}
 					for (int j(0); j < rep_alleles.size(); ++j) {
 						prod *= drop_in(population_t[i], rep_alleles[j]);
 						prod_d *= drop_in(population_t[i], rep_alleles[j]);
 
-						ofs << drop_in(population_t[i], rep_alleles[j]) << ",";
+						//ofs << drop_in(population_t[i], rep_alleles[j]) << ",";
 					}
 					sum += prod;
 					sum_d += prod_d;
-					ofs << "," << prod << "," << prod_d << endl;
+					//ofs << "," << prod << "," << prod_d << endl;
 					prod = 1.0;
 					prod_d = 1.0;
 				}
@@ -550,8 +550,8 @@ public:
 			LRs.push_back(numerators[i] / denominator_sum);
 		}
 
-		ofs << endl;
-		ofs.close();
+		//ofs << endl;
+		//ofs.close();
 	}
 
 	double drop_out(Person p, vector<Allele>& v) {		// Determining drop-out rate for a specific genotype (Person p)
