@@ -1,4 +1,4 @@
-# LAST
+# PGP
 This tool can be used to achieve likelihood ratio for suspect(s) and/or victim(s) in a DNA mixture using probabilistic genotyping
 
 Probabilistic Genotyping Program Copyright (C) 2015 Munieshwar Ramdass, Nicholas J. Corpuz, Khagay Nagdimov
