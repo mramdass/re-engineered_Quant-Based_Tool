@@ -1,6 +1,6 @@
 //	
 //	This tool can be used to achieve likelihood ratio for suspect(s) and/or victim(s) in a DNA mixture using probabilistic genotyping
-//	Probabilistic Genotyping Program Copyright (C) 2015 Munieshwar Ramdass, Nicholas J. Corpuz, Khagay Nagdimov
+//	Probabilistic Genotyping Program (C) 2015 Munieshwar Ramdass, Nicholas J. Corpuz, Khagay Nagdimov
 //	
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 //	
 //	Team:	Clinton Hughes		(Supervisor)
 //			Munieshwar Ramdass	(C++ Programmer)
-//			Nicholas Corpuz		(GUI, R Programmer)
-//			Khagay Nagdimov		(GUI, R Programmer)
+//			Nicolas Corpus		(GUI, R Programmer)
+//			Khaguy Nagdimov		(GUI, R Programmer)
 //			
 //	June 2nd, 2015 - August 14th, 2015
 //
@@ -100,6 +100,8 @@ double PHOM1 = 0.0;
 
 bool DEDUCIBLE = false;
 double QUANT = 25.0;
+
+double MINIMUM_WILD_FREQUENCY = 0.001;	// Not constant
 
 class Genotype_Combination;
 class Person;
@@ -741,7 +743,7 @@ double generate_wild_allele_freq(vector<Allele>& alleles) {
 		c -= alleles[i].get_freq();
 	}
 	if (c < 0)
-		c = 0.007;	// Minimum WILD frequency?
+		c = MINIMUM_WILD_FREQUENCY;
 	return c;
 }
 
@@ -926,8 +928,8 @@ double run_LAST(vector<vector<string>>& allele_database, vector<vector<string>>&
 	double quant(100.0);
 	string dnd("ND");
 	vector<vector<Person>> knowns = get_data(evidence_database, allele_database, replicates, alleles, contributors, quant, race);
-	
-	double low_copy_pC0(0.0), low_copy_pC1(0.0), low_copy_pC2(0.0), high_copy_pC0(0.0), high_copy_pC1(0.0), high_copy_pC2(0.0), theta(0.0);
+
+	double low_copy_pC0(0.0), low_copy_pC1(0.0), low_copy_pC2(0.0), high_copy_pC0(0.0), high_copy_pC1(0.0), high_copy_pC2(0.0), theta(0.0), min_w(0.0);
 	vector<vector<string>> drop_in_database;
 	vector<string> drop_in_col(7);
 	drop_in_database.push_back(drop_in_col);
@@ -949,9 +951,12 @@ double run_LAST(vector<vector<string>>& allele_database, vector<vector<string>>&
 				high_copy_pC2 = atof(drop_in_database[i][j + 1].c_str());
 			else if (drop_in_database[i][j] == "THETA")
 				theta = atof(drop_in_database[i][j + 1].c_str());
+			else if (drop_in_database[i][j] == "MIN-W")
+				min_w = atof(drop_in_database[i][j + 1].c_str());
 		}
 	}
 	HOM_CONST = theta;
+	MINIMUM_WILD_FREQUENCY = min_w;
 	if (quant <= 100) {		// QUANT of 100 will be run as low copy
 		PC0 = low_copy_pC0;
 		PC1 = low_copy_pC1;
