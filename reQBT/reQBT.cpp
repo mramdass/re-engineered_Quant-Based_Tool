@@ -498,9 +498,9 @@ public:
 
 						ofs << drop_in(population_t[i], rep_alleles[j]) << ",";
 					}
-					sum += prod;
-					//sum_d += prod_d;									// Used in LASTv3 with (if, if-else) statement
-					ofs << "," << prod << "," << prod_d << endl;
+					//sum += prod;													// Used in LASTv3 with (if, if-else) statement
+					//sum_d += prod_d;												// Used in LASTv3 with (if, if-else) statement
+					ofs << "," << prod << "," << prod_d << ",Pn Copy" << endl;		// Used in LASTv3 with (if, if-else) statement
 					prod = 1.0;
 					prod_d = 1.0;
 
@@ -951,13 +951,19 @@ double run_LAST(vector<vector<string>>& allele_database, vector<vector<string>>&
 				high_copy_pC2 = atof(drop_in_database[i][j + 1].c_str());
 			else if (drop_in_database[i][j] == "THETA")
 				theta = atof(drop_in_database[i][j + 1].c_str());
-			else if (drop_in_database[i][j] == "MIN-W")
+			else if (drop_in_database[i][j] == "B-MIN-WILD-FREQ" && race == 'b')
+				min_w = atof(drop_in_database[i][j + 1].c_str());
+			else if (drop_in_database[i][j] == "C-MIN-WILD-FREQ" && race == 'c')
+				min_w = atof(drop_in_database[i][j + 1].c_str());
+			else if (drop_in_database[i][j] == "H-MIN-WILD-FREQ" && race == 'h')
+				min_w = atof(drop_in_database[i][j + 1].c_str());
+			else if (drop_in_database[i][j] == "A-MIN-WILD-FREQ" && race == 'a')
 				min_w = atof(drop_in_database[i][j + 1].c_str());
 		}
 	}
 	HOM_CONST = theta;
-	MINIMUM_WILD_FREQUENCY = min_w;
-	if (quant <= 100) {		// QUANT of 100 will be run as low copy
+	MINIMUM_WILD_FREQUENCY = min_w;		// Setting minimum wild frequency in case "w" becomes negative
+	if (quant <= 100) {					// QUANT of 100 will be run as low copy
 		PC0 = low_copy_pC0;
 		PC1 = low_copy_pC1;
 		PC2 = low_copy_pC2;
