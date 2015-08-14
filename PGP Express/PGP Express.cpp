@@ -1,6 +1,6 @@
 //	
 //	This tool can be used to achieve likelihood ratio for suspect(s) and/or victim(s) in a DNA mixture using probabilistic genotyping
-//	Probabilistic Genotyping Program (C) 2015 Munieshwar Ramdass, Nicholas J. Corpuz, Khagay Nagdimov
+//	re-engineered Quant-Based Tool (C) 2015 Munieshwar Ramdass, Nicholas J. Corpuz, Khagay Nagdimov
 //	
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 //
 
 //
-//	Probabilistic Genotyping Program (PGP)
+//	re-engineered Quant-Based Tool (reQBT)
 //	
 //	Team:	Clinton Hughes		(Supervisor)
 //			Munieshwar Ramdass	(C++ Programmer)
