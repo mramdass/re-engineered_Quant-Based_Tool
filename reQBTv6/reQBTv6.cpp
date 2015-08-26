@@ -57,6 +57,7 @@
 #include <thread>
 #include <future>
 #include <direct.h>
+#include <tuple>
 
 typedef std::string String;								// The following typedef used for CSV as a means of convinience
 typedef std::vector<String> csv_row;
@@ -109,6 +110,21 @@ public:
 
 	char RUN_TYPE;
 	int RACE;
+
+private:
+	double PN_PHET0;
+	double PN_PHET1;
+	double PN_PHET2;
+	double PN_PHOM0;
+	double PN_PHOM1;
+
+	double PD_PHET0;
+	double PD_PHET1;
+	double PD_PHET2;
+	double PD_PHOM0;
+	double PD_PHOM1;
+	
+	friend Report;
 };
 
 class Timer {
@@ -142,7 +158,7 @@ private:
 	friend Report;
 
 	friend double generate_wild_allele_freq(vector<Allele>& alleles);
-	friend bool get_data(csv_database& evidence_db, csv_database& allele_db, vector<vector<Allele>>& replicates, vector<Allele>& distinct_alleles, vector<Person>& knowns_pn, vector<Person>& knowns_pd, int& unknowns_pn, int& unknowns_pd, double& quant, string& case_name, string& locus, int& contributors_pn, int& contributors_pd, Thread_Constants& tc);
+	friend bool get_data(csv_database& evidence_db, csv_database& allele_db, vector<vector<Allele>>& replicates, vector<Allele>& distinct_alleles, vector<Person>& knowns_pn, vector<Person>& knowns_pd, int& unknowns_pn, int& unknowns_pd, double& quant, string& case_name, string& locus, int& contributors_pn, int& contributors_pd, int& contributors, Thread_Constants& tc);
 };
 
 class Genotypes {
@@ -307,151 +323,68 @@ public:
 		}
 
 		lr = pn / pd;
-		cout << "\tPn: " << pn << "\tPd: " << pd << "\tLR: " << lr << endl;
 
 		if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'C') generate_hypothetical_scenario(drop_out_db);
 
 		if (tc.RACE == 1) {
-			ofs << case_name << "," << locus << ",BLACK" << ",,LR:," << lr << ",,Pn:," << pn << ",,Pd:," << pd << ",,Time Elapsed:," << t.elapsed() << ",Second(s)" << endl;
-
-			if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') {
-				efs << "\nLocus:," << locus << ",,Quant:," << QUANT << ",,Deducible:," << DEDUCIBLE << endl;
-				for (int i(0); i < knowns_pn.size(); ++i)
-					efs << ",Known Pn:," << knowns_pn[i].a.length << "," << knowns_pn[i].b.length << endl;
-				for (int i(0); i < knowns_pd.size(); ++i)
-					efs << ",Known Pd:," << knowns_pd[i].a.length << "," << knowns_pd[i].b.length << endl;
-				efs << "\nBLACK\n";
-				efs << "\nGenotype Freq" << endl;
-				for (int i(0); i < persons.size(); ++i)
-					efs << ",(" << persons[i].a.length << "," << persons[i].b.length << "),(" << persons[i].a.freq << "," << persons[i].b.freq << ")," << persons[i].freq << endl;
-				efs << "\n,,LR:," << lr << ",,Pn:," << pn << ",,Pd:," << pd << endl << endl;
-
-				if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'C') {
-					for (int i(0); i < denominators.size(); ++i) {
-						for (int j(0); j < numerators.size(); ++j) {
-							efs << ",LR:," << numerators[j].first / denominators[i].first << ",,Pn:," << numerators[j].first << ",,Pd:," << denominators[i].first << ",,";
-							for (int k(0); k < numerators[j].second.size(); ++k)
-								efs << numerators[j].second[k].a.length << "," << numerators[j].second[k].b.length << ",,";
-							efs << unknowns_pn << ",Uknown(s) Pn,,";
-							for (int k(0); k < denominators[i].second.size(); ++k)
-								efs << denominators[i].second[k].a.length << "," << denominators[i].second[k].b.length << ",,";
-							efs << unknowns_pd << ",Uknown(s) Pd" << endl;
-						}
-						efs << endl;
-					}
-					efs << endl;
-				}
-
-				efs << "\n,Time Elapsed:," << t.elapsed() << ",Second(s)" << endl;
-				efs.close();
-			}
+			cout << case_name << " - " << locus << " BLACK - LR: " << lr << " - Pn: " << pn << " - Pd: " << pd << endl;
+			ofs << case_name << "," << locus << ",BLACK,," << lr << "," << pn << "," << pd << ",," << t.elapsed()
+				<< ",," << tc.PN_PHET0 << "," << tc.PN_PHET1 << "," << tc.PN_PHET2 << "," << tc.PN_PHOM0 << "," << tc.PN_PHOM1
+				<< ",," << tc.PD_PHET0 << "," << tc.PD_PHET1 << "," << tc.PD_PHET2 << "," << tc.PD_PHOM0 << "," << tc.PD_PHOM1 << endl;
+			if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') efs << "\nBLACK\n";
 		}
 		else if (tc.RACE == 2) {
-			ofs << case_name << "," << locus << ",CAUCASIAN" << ",,LR:," << lr << ",,Pn:," << pn << ",,Pd:," << pd << ",,Time Elapsed:," << t.elapsed() << ",Second(s)" << endl;
-
-			if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') {
-				efs << "\nLocus:," << locus << ",,Quant:," << QUANT << ",,Deducible:," << DEDUCIBLE << endl;
-				for (int i(0); i < knowns_pn.size(); ++i)
-					efs << ",Known Pn:," << knowns_pn[i].a.length << "," << knowns_pn[i].b.length << endl;
-				for (int i(0); i < knowns_pd.size(); ++i)
-					efs << ",Known Pd:," << knowns_pd[i].a.length << "," << knowns_pd[i].b.length << endl;
-				efs << "\nCAUCASIAN\n";
-				efs << "\nGenotype Freq" << endl;
-				for (int i(0); i < persons.size(); ++i)
-					efs << ",(" << persons[i].a.length << "," << persons[i].b.length << "),(" << persons[i].a.freq << "," << persons[i].b.freq << ")," << persons[i].freq << endl;
-				efs << "\n,,LR:," << lr << ",,Pn:," << pn << ",,Pd:," << pd << endl << endl;
-
-				if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'C') {
-					for (int i(0); i < denominators.size(); ++i) {
-						for (int j(0); j < numerators.size(); ++j) {
-							efs << ",LR:," << numerators[j].first / denominators[i].first << ",,Pn:," << numerators[j].first << ",,Pd:," << denominators[i].first << ",,";
-							for (int k(0); k < numerators[j].second.size(); ++k)
-								efs << numerators[j].second[k].a.length << "," << numerators[j].second[k].b.length << ",,";
-							efs << unknowns_pn << ",Uknown(s) Pn,,";
-							for (int k(0); k < denominators[i].second.size(); ++k)
-								efs << denominators[i].second[k].a.length << "," << denominators[i].second[k].b.length << ",,";
-							efs << unknowns_pd << ",Uknown(s) Pd" << endl;
-						}
-						efs << endl;
-					}
-					efs << endl;
-				}
-
-				efs << "\n,Time Elapsed:," << t.elapsed() << ",Second(s)" << endl;
-				efs.close();
-			}
+			cout << case_name << " - " << locus << " CAUCASIAN - LR: " << lr << " - Pn: " << pn << " - Pd: " << pd << endl;
+			ofs << case_name << "," << locus << ",CAUCASIAN,," << lr << "," << pn << "," << pd << ",," << t.elapsed()
+				<< ",," << tc.PN_PHET0 << "," << tc.PN_PHET1 << "," << tc.PN_PHET2 << "," << tc.PN_PHOM0 << "," << tc.PN_PHOM1
+				<< ",," << tc.PD_PHET0 << "," << tc.PD_PHET1 << "," << tc.PD_PHET2 << "," << tc.PD_PHOM0 << "," << tc.PD_PHOM1 << endl;
+			if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') efs << "\nCAUCASIAN\n";
 		}
 		else if (tc.RACE == 3) {
-			ofs << case_name << "," << locus << ",HISPANIC" << ",,LR:," << lr << ",,Pn:," << pn << ",,Pd:," << pd << ",,Time Elapsed:," << t.elapsed() << ",Second(s)" << endl;
-
-			if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') {
-				efs << "\nLocus:," << locus << ",,Quant:," << QUANT << ",,Deducible:," << DEDUCIBLE << endl;
-				for (int i(0); i < knowns_pn.size(); ++i)
-					efs << ",Known Pn:," << knowns_pn[i].a.length << "," << knowns_pn[i].b.length << endl;
-				for (int i(0); i < knowns_pd.size(); ++i)
-					efs << ",Known Pd:," << knowns_pd[i].a.length << "," << knowns_pd[i].b.length << endl;
-				efs << "\nHISPANIC\n";
-				efs << "\nGenotype Freq" << endl;
-				for (int i(0); i < persons.size(); ++i)
-					efs << ",(" << persons[i].a.length << "," << persons[i].b.length << "),(" << persons[i].a.freq << "," << persons[i].b.freq << ")," << persons[i].freq << endl;
-				efs << "\n,,LR:," << lr << ",,Pn:," << pn << ",,Pd:," << pd << endl << endl;
-
-				if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'C') {
-					for (int i(0); i < denominators.size(); ++i) {
-						for (int j(0); j < numerators.size(); ++j) {
-							efs << ",LR:," << numerators[j].first / denominators[i].first << ",,Pn:," << numerators[j].first << ",,Pd:," << denominators[i].first << ",,";
-							for (int k(0); k < numerators[j].second.size(); ++k)
-								efs << numerators[j].second[k].a.length << "," << numerators[j].second[k].b.length << ",,";
-							efs << unknowns_pn << ",Uknown(s) Pn,,";
-							for (int k(0); k < denominators[i].second.size(); ++k)
-								efs << denominators[i].second[k].a.length << "," << denominators[i].second[k].b.length << ",,";
-							efs << unknowns_pd << ",Uknown(s) Pd" << endl;
-						}
-						efs << endl;
-					}
-					efs << endl;
-				}
-
-				efs << "\n,Time Elapsed:," << t.elapsed() << ",Second(s)" << endl;
-				efs.close();
-			}
+			cout << case_name << " - " << locus << " HISPANIC - LR: " << lr << " - Pn: " << pn << " - Pd: " << pd << endl;
+			ofs << case_name << "," << locus << ",HISPANIC,," << lr << "," << pn << "," << pd << ",," << t.elapsed()
+				<< ",," << tc.PN_PHET0 << "," << tc.PN_PHET1 << "," << tc.PN_PHET2 << "," << tc.PN_PHOM0 << "," << tc.PN_PHOM1
+				<< ",," << tc.PD_PHET0 << "," << tc.PD_PHET1 << "," << tc.PD_PHET2 << "," << tc.PD_PHOM0 << "," << tc.PD_PHOM1 << endl;
+			if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') efs << "\nHISPANIC\n";	
 		}
 		else if (tc.RACE == 4) {
-			ofs << case_name << "," << locus << ",ASIAN" << ",,LR:," << lr << ",,Pn:," << pn << ",,Pd:," << pd << ",,Time Elapsed:," << t.elapsed() << ",Second(s)" << endl;
+			cout << case_name << " - " << locus << " ASIAN - LR: " << lr << " - Pn: " << pn << " - Pd: " << pd << endl;
+			ofs << case_name << "," << locus << ",ASIAN,," << lr << "," << pn << "," << pd << ",," << t.elapsed()
+				<< ",," << tc.PN_PHET0 << "," << tc.PN_PHET1 << "," << tc.PN_PHET2 << "," << tc.PN_PHOM0 << "," << tc.PN_PHOM1
+				<< ",," << tc.PD_PHET0 << "," << tc.PD_PHET1 << "," << tc.PD_PHET2 << "," << tc.PD_PHOM0 << "," << tc.PD_PHOM1 << endl;
+			if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') efs << "\nASIAN\n";
+		}
 
-			if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') {
-				efs << "\nLocus:," << locus << ",,Quant:," << QUANT << ",,Deducible:," << DEDUCIBLE << endl;
-				for (int i(0); i < knowns_pn.size(); ++i)
-					efs << ",Known Pn:," << knowns_pn[i].a.length << "," << knowns_pn[i].b.length << endl;
-				for (int i(0); i < knowns_pd.size(); ++i)
-					efs << ",Known Pd:," << knowns_pd[i].a.length << "," << knowns_pd[i].b.length << endl;
-				efs << "\nASIAN\n";
-				efs << "\nGenotype Freq" << endl;
-				for (int i(0); i < persons.size(); ++i)
-					efs << ",(" << persons[i].a.length << "," << persons[i].b.length << "),(" << persons[i].a.freq << "," << persons[i].b.freq << ")," << persons[i].freq << endl;
-				efs << "\n,,LR:," << lr << ",,Pn:," << pn << ",,Pd:," << pd << endl << endl;
+		if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') {
+			efs << "\nLocus:," << locus << ",,Quant:," << QUANT << ",,Deducible:," << DEDUCIBLE << endl;
+			for (int i(0); i < knowns_pn.size(); ++i)
+				efs << ",Known Pn:," << knowns_pn[i].a.length << "," << knowns_pn[i].b.length << endl;
+			for (int i(0); i < knowns_pd.size(); ++i)
+				efs << ",Known Pd:," << knowns_pd[i].a.length << "," << knowns_pd[i].b.length << endl;
+			efs << "\nGenotype Freq" << endl;
+			for (int i(0); i < persons.size(); ++i)
+				efs << ",(" << persons[i].a.length << "," << persons[i].b.length << "),(" << persons[i].a.freq << "," << persons[i].b.freq << ")," << persons[i].freq << endl;
+			efs << "\n,,LR:," << lr << ",,Pn:," << pn << ",,Pd:," << pd << endl << endl;
 
-				if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'C') {
-					for (int i(0); i < denominators.size(); ++i) {
-						for (int j(0); j < numerators.size(); ++j) {
-							efs << ",LR:," << numerators[j].first / denominators[i].first << ",,Pn:," << numerators[j].first << ",,Pd:," << denominators[i].first << ",,";
-							for (int k(0); k < numerators[j].second.size(); ++k)
-								efs << numerators[j].second[k].a.length << "," << numerators[j].second[k].b.length << ",,";
-							efs << unknowns_pn << ",Uknown(s) Pn,,";
-							for (int k(0); k < denominators[i].second.size(); ++k)
-								efs << denominators[i].second[k].a.length << "," << denominators[i].second[k].b.length << ",,";
-							efs << unknowns_pd << ",Uknown(s) Pd" << endl;
-						}
-						efs << endl;
+			if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'C') {
+				for (int i(0); i < denominators.size(); ++i) {
+					for (int j(0); j < numerators.size(); ++j) {
+						efs << ",LR:," << numerators[j].first / denominators[i].first << ",,Pn:," << numerators[j].first << ",,Pd:," << denominators[i].first << ",,";
+						for (int k(0); k < numerators[j].second.size(); ++k)
+							efs << numerators[j].second[k].a.length << "," << numerators[j].second[k].b.length << ",,";
+						efs << unknowns_pn << ",Uknown(s) Pn,,";
+						for (int k(0); k < denominators[i].second.size(); ++k)
+							efs << denominators[i].second[k].a.length << "," << denominators[i].second[k].b.length << ",,";
+						efs << unknowns_pd << ",Uknown(s) Pd" << endl;
 					}
 					efs << endl;
 				}
-
-				efs << "\n,Time Elapsed:," << t.elapsed() << ",Second(s)" << endl;
-				efs.close();
+				efs << endl;
 			}
+			efs << "\n,Time Elapsed:," << t.elapsed() << ",Second(s)" << endl;
 		}
 
+		efs.close();
 		ofs.close();
 	}
 
@@ -468,7 +401,7 @@ public:
 	}
 
 	bool generate_pd(csv_database& drop_out_db) {
-		set_drop_out(drop_out_db, CONTRIBUTORS_PD);
+		set_drop_out(drop_out_db, CONTRIBUTORS_PD, 'd');
 
 		double product(1.0), sum(0.0);
 
@@ -479,6 +412,19 @@ public:
 		ofs << "\n,HET0:," << tc.PHET0 << ",,pC0:," << PC0 << "\n,HET1:," << tc.PHET1 << ",,pC1:," << PC1
 			<< "\n,HET2:," << tc.PHET2 << ",,pC2:," << PC2 << "\n,HOM0:," << tc.PHOM0 << "\n,HOM1:," << tc.PHOM1
 			<< ",,Theta:," << HOM_CONST << endl << endl;
+
+		for (int i(0); i < population_pd[0].size(); ++i)
+			if (i >= (unknowns_pd + knowns_pd.size()) - ((unknowns_pd + knowns_pd.size()) - knowns_pd.size()))
+				ofs << "Genotype Freq,";
+		ofs << ",";
+		for (int i(0); i < population_pd[0].size(); ++i) {
+			for (int j(0); j < replicates.size(); ++j)
+				ofs << "Drop-Out,";
+			ofs << ",";
+		}
+		for (int i(0); i < replicates.size(); ++i)
+			ofs << "Drop-In,";
+		ofs << ",Row Product" << endl;
 
 		for (int i(0); i < population_pd.size(); ++i) {
 			if (is_subset_pd(i)) {
@@ -518,7 +464,7 @@ public:
 	}
 
 	bool generate_pn(csv_database& drop_out_db) {
-		set_drop_out(drop_out_db, CONTRIBUTORS_PN);
+		set_drop_out(drop_out_db, CONTRIBUTORS_PN, 'n');
 
 		double product(1.0), sum(0.0), target_pn(0.0);
 		double other_product(1.0), other_sum(0.0);
@@ -530,6 +476,19 @@ public:
 		ofs << "\n,HET0:," << tc.PHET0 << ",,pC0:," << PC0 << "\n,HET1:," << tc.PHET1 << ",,pC1:," << PC1
 			<< "\n,HET2:," << tc.PHET2 << ",,pC2:," << PC2 << "\n,HOM0:," << tc.PHOM0 << "\n,HOM1:," << tc.PHOM1
 			<< ",,Theta:," << HOM_CONST << endl << endl;
+
+		for (int i(0); i < population_pn[0].size(); ++i)
+			if (i >= (unknowns_pn + knowns_pn.size()) - ((unknowns_pn + knowns_pn.size()) - knowns_pn.size()))
+				ofs << "Genotype Freq,";
+		ofs << ",";
+		for (int i(0); i < population_pn[0].size(); ++i) {
+			for (int j(0); j < replicates.size(); ++j)
+				ofs << "Drop-Out,";
+			ofs << ",";
+		}
+		for (int i(0); i < replicates.size(); ++i)
+			ofs << "Drop-In,";
+		ofs << ",Row Product" << endl;
 
 		for (int i(0); i < population_pn.size(); ++i) {
 			if (is_subset_pn(i)) {
@@ -569,7 +528,7 @@ public:
 	}
 
 	bool generate_pd_express_with_data(csv_database& drop_out_db) {
-		set_drop_out(drop_out_db, CONTRIBUTORS_PD);
+		set_drop_out(drop_out_db, CONTRIBUTORS_PD, 'd');
 
 		double product(1.0), sum(0.0);
 
@@ -609,7 +568,7 @@ public:
 	}
 
 	bool generate_pn_express_with_data(csv_database& drop_out_db) {
-		set_drop_out(drop_out_db, CONTRIBUTORS_PN);
+		set_drop_out(drop_out_db, CONTRIBUTORS_PN, 'n');
 
 		double product(1.0), sum(0.0), target_pn(0.0);
 		double other_product(1.0), other_sum(0.0);
@@ -650,7 +609,7 @@ public:
 	}
 
 	bool generate_pd_express(csv_database& drop_out_db) {
-		set_drop_out(drop_out_db, CONTRIBUTORS_PD);
+		set_drop_out(drop_out_db, CONTRIBUTORS_PD, 'd');
 
 		double product(1.0), sum(0.0);
 
@@ -677,7 +636,7 @@ public:
 	}
 
 	bool generate_pn_express(csv_database& drop_out_db) {
-		set_drop_out(drop_out_db, CONTRIBUTORS_PN);
+		set_drop_out(drop_out_db, CONTRIBUTORS_PN, 'n');
 
 		double product(1.0), sum(0.0);
 
@@ -928,8 +887,8 @@ public:
 	}
 
 	bool generate_px(csv_database& drop_out_db, vector<Person>& knowns, char known_ID) {		// The generic function that chould have been used if last few lines are modified
-		if (known_ID == 'n') set_drop_out(drop_out_db, CONTRIBUTORS_PN);
-		else if (known_ID == 'd') set_drop_out(drop_out_db, CONTRIBUTORS_PD);
+		if (known_ID == 'n') swap_drop_out_rates('n');
+		else if (known_ID == 'd') swap_drop_out_rates('d');
 		
 		double product(1.0), sum(0.0);
 
@@ -964,7 +923,7 @@ public:
 		return false;
 	}
 
-	void set_drop_out(csv_database& drop_out_db, int contributors) {
+	void set_drop_out(csv_database& drop_out_db, int contributors, char term) {
 		int quant(QUANT);
 
 		string dnd("ND");
@@ -981,6 +940,14 @@ public:
 					tc.PHOM1 = slope * quant + b;
 					tc.PHOM0 = full - tc.PHOM1;
 
+					if (term == 'n') {
+						tc.PN_PHOM1 = tc.PHOM1;
+						tc.PN_PHOM0 = tc.PHOM0;
+					}
+					else if (term == 'd') {
+						tc.PD_PHOM1 = tc.PHOM1;
+						tc.PD_PHOM0 = tc.PHOM0;
+					}
 				}
 				else if (drop_out_db[i][j] == "HOM1-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 50 && quant < 100) {
 					double b(0.0), l(50.0), h(100.0);
@@ -988,6 +955,15 @@ public:
 					b = atof(drop_out_db[i][j + 3].c_str()) - slope * l;
 					tc.PHOM1 = slope * quant + b;
 					tc.PHOM0 = full - tc.PHOM1;
+
+					if (term == 'n') {
+						tc.PN_PHOM1 = tc.PHOM1;
+						tc.PN_PHOM0 = tc.PHOM0;
+					}
+					else if (term == 'd') {
+						tc.PD_PHOM1 = tc.PHOM1;
+						tc.PD_PHOM0 = tc.PHOM0;
+					}
 				}
 				else if (drop_out_db[i][j] == "HOM1-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 100 && quant < 150) {
 					double b(0.0), l(100.0), h(150.0);
@@ -995,6 +971,15 @@ public:
 					b = atof(drop_out_db[i][j + 4].c_str()) - slope * l;
 					tc.PHOM1 = slope * quant + b;
 					tc.PHOM0 = full - tc.PHOM1;
+
+					if (term == 'n') {
+						tc.PN_PHOM1 = tc.PHOM1;
+						tc.PN_PHOM0 = tc.PHOM0;
+					}
+					else if (term == 'd') {
+						tc.PD_PHOM1 = tc.PHOM1;
+						tc.PD_PHOM0 = tc.PHOM0;
+					}
 				}
 				else if (drop_out_db[i][j] == "HOM1-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 150 && quant < 250) {
 					double b(0.0), l(150.0), h(250.0);
@@ -1002,6 +987,15 @@ public:
 					b = atof(drop_out_db[i][j + 5].c_str()) - slope * l;
 					tc.PHOM1 = slope * quant + b;
 					tc.PHOM0 = full - tc.PHOM1;
+
+					if (term == 'n') {
+						tc.PN_PHOM1 = tc.PHOM1;
+						tc.PN_PHOM0 = tc.PHOM0;
+					}
+					else if (term == 'd') {
+						tc.PD_PHOM1 = tc.PHOM1;
+						tc.PD_PHOM0 = tc.PHOM0;
+					}
 				}
 				else if (drop_out_db[i][j] == "HOM1-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 250 && quant <= 500) {
 					double b(0.0), l(250.0), h(500.0);
@@ -1009,6 +1003,15 @@ public:
 					b = atof(drop_out_db[i][j + 6].c_str()) - slope * l;
 					tc.PHOM1 = slope * quant + b;
 					tc.PHOM0 = full - tc.PHOM1;
+
+					if (term == 'n') {
+						tc.PN_PHOM1 = tc.PHOM1;
+						tc.PN_PHOM0 = tc.PHOM0;
+					}
+					else if (term == 'd') {
+						tc.PD_PHOM1 = tc.PHOM1;
+						tc.PD_PHOM0 = tc.PHOM0;
+					}
 				}
 				else if (drop_out_db[i][j] == "HOM1-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 6.25 && quant < 12.5) { // Single Source
 					double b(0.0), l(6.25), h(12.5);
@@ -1016,6 +1019,15 @@ public:
 					b = atof(drop_out_db[i][j + 8].c_str()) - slope * l;
 					tc.PHOM1 = slope * quant + b;
 					tc.PHOM0 = full - tc.PHOM1;
+
+					if (term == 'n') {
+						tc.PN_PHOM1 = tc.PHOM1;
+						tc.PN_PHOM0 = tc.PHOM0;
+					}
+					else if (term == 'd') {
+						tc.PD_PHOM1 = tc.PHOM1;
+						tc.PD_PHOM0 = tc.PHOM0;
+					}
 				}
 				else if (drop_out_db[i][j] == "HOM1-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 12.5 && quant < 25) {
 					double b(0.0), l(12.5), h(25);
@@ -1023,6 +1035,15 @@ public:
 					b = atof(drop_out_db[i][j + 9].c_str()) - slope * l;
 					tc.PHOM1 = slope * quant + b;
 					tc.PHOM0 = full - tc.PHOM1;
+
+					if (term == 'n') {
+						tc.PN_PHOM1 = tc.PHOM1;
+						tc.PN_PHOM0 = tc.PHOM0;
+					}
+					else if (term == 'd') {
+						tc.PD_PHOM1 = tc.PHOM1;
+						tc.PD_PHOM0 = tc.PHOM0;
+					}
 				}
 
 				else if (drop_out_db[i][j] == "HET1-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 25 && quant < 50) {
@@ -1030,42 +1051,63 @@ public:
 					double slope((atof(drop_out_db[i][j + 3].c_str()) - atof(drop_out_db[i][j + 2].c_str())) / (h - l));
 					b = atof(drop_out_db[i][j + 2].c_str()) - slope * l;
 					tc.PHET1 = slope * quant + b;
+
+					if (term == 'n') tc.PN_PHET1 = tc.PHET1;
+					else if (term == 'd') tc.PD_PHET1 = tc.PHET1;
 				}
 				else if (drop_out_db[i][j] == "HET1-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 50 && quant < 100) {
 					double b(0.0), l(50.0), h(100.0);
 					double slope((atof(drop_out_db[i][j + 4].c_str()) - atof(drop_out_db[i][j + 3].c_str())) / (h - l));
 					b = atof(drop_out_db[i][j + 3].c_str()) - slope * l;
 					tc.PHET1 = slope * quant + b;
+
+					if (term == 'n') tc.PN_PHET1 = tc.PHET1;
+					else if (term == 'd') tc.PD_PHET1 = tc.PHET1;
 				}
 				else if (drop_out_db[i][j] == "HET1-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 100 && quant < 150) {
 					double b(0.0), l(100.0), h(150.0);
 					double slope((atof(drop_out_db[i][j + 5].c_str()) - atof(drop_out_db[i][j + 4].c_str())) / (h - l));
 					b = atof(drop_out_db[i][j + 4].c_str()) - slope * l;
 					tc.PHET1 = slope * quant + b;
+
+					if (term == 'n') tc.PN_PHET1 = tc.PHET1;
+					else if (term == 'd') tc.PD_PHET1 = tc.PHET1;
 				}
 				else if (drop_out_db[i][j] == "HET1-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 150 && quant < 250) {
 					double b(0.0), l(150.0), h(250.0);
 					double slope((atof(drop_out_db[i][j + 6].c_str()) - atof(drop_out_db[i][j + 5].c_str())) / (h - l));
 					b = atof(drop_out_db[i][j + 5].c_str()) - slope * l;
 					tc.PHET1 = slope * quant + b;
+
+					if (term == 'n') tc.PN_PHET1 = tc.PHET1;
+					else if (term == 'd') tc.PD_PHET1 = tc.PHET1;
 				}
 				else if (drop_out_db[i][j] == "HET1-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 250 && quant <= 500) {
 					double b(0.0), l(250.0), h(500.0);
 					double slope((atof(drop_out_db[i][j + 7].c_str()) - atof(drop_out_db[i][j + 6].c_str())) / (h - l));
 					b = atof(drop_out_db[i][j + 6].c_str()) - slope * l;
 					tc.PHET1 = slope * quant + b;
+
+					if (term == 'n') tc.PN_PHET1 = tc.PHET1;
+					else if (term == 'd') tc.PD_PHET1 = tc.PHET1;
 				}
 				else if (drop_out_db[i][j] == "HET1-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 6.25 && quant < 12.5) { // Single Source
 					double b(0.0), l(6.25), h(12.5);
 					double slope((atof(drop_out_db[i][j + 9].c_str()) - atof(drop_out_db[i][j + 8].c_str())) / (h - l));
 					b = atof(drop_out_db[i][j + 8].c_str()) - slope * l;
 					tc.PHET1 = slope * quant + b;
+
+					if (term == 'n') tc.PN_PHET1 = tc.PHET1;
+					else if (term == 'd') tc.PD_PHET1 = tc.PHET1;
 				}
 				else if (drop_out_db[i][j] == "HET1-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 12.5 && quant < 25) {
 					double b(0.0), l(12.5), h(25.0);
 					double slope((atof(drop_out_db[i][j + 2].c_str()) - atof(drop_out_db[i][j + 9].c_str())) / (h - l));
 					b = atof(drop_out_db[i][j + 9].c_str()) - slope * l;
 					tc.PHET1 = slope * quant + b;
+
+					if (term == 'n') tc.PN_PHET1 = tc.PHET1;
+					else if (term == 'd') tc.PD_PHET1 = tc.PHET1;
 				}
 
 				else if (drop_out_db[i][j] == "HET2-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 25 && quant < 50) {
@@ -1074,6 +1116,15 @@ public:
 					b = atof(drop_out_db[i][j + 2].c_str()) - slope * l;
 					tc.PHET2 = slope * quant + b;
 					tc.PHET0 = full - (tc.PHET1 + tc.PHET2);
+
+					if (term == 'n') {
+						tc.PN_PHET2 = tc.PHET2;
+						tc.PN_PHET0 = tc.PHET0;
+					}
+					else if (term == 'd') {
+						tc.PD_PHET2 = tc.PHET2;
+						tc.PD_PHET0 = tc.PHET0;
+					}
 				}
 				else if (drop_out_db[i][j] == "HET2-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 50 && quant < 100) {
 					double b(0.0), l(50.0), h(100.0);
@@ -1081,6 +1132,15 @@ public:
 					b = atof(drop_out_db[i][j + 3].c_str()) - slope * l;
 					tc.PHET2 = slope * quant + b;
 					tc.PHET0 = full - (tc.PHET1 + tc.PHET2);
+
+					if (term == 'n') {
+						tc.PN_PHET2 = tc.PHET2;
+						tc.PN_PHET0 = tc.PHET0;
+					}
+					else if (term == 'd') {
+						tc.PD_PHET2 = tc.PHET2;
+						tc.PD_PHET0 = tc.PHET0;
+					}
 				}
 				else if (drop_out_db[i][j] == "HET2-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 100 && quant < 150) {
 					double b(0.0), l(100.0), h(150.0);
@@ -1088,6 +1148,15 @@ public:
 					b = atof(drop_out_db[i][j + 4].c_str()) - slope * l;
 					tc.PHET2 = slope * quant + b;
 					tc.PHET0 = full - (tc.PHET1 + tc.PHET2);
+
+					if (term == 'n') {
+						tc.PN_PHET2 = tc.PHET2;
+						tc.PN_PHET0 = tc.PHET0;
+					}
+					else if (term == 'd') {
+						tc.PD_PHET2 = tc.PHET2;
+						tc.PD_PHET0 = tc.PHET0;
+					}
 				}
 				else if (drop_out_db[i][j] == "HET2-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 150 && quant < 250) {
 					double b(0.0), l(150.0), h(250.0);
@@ -1095,6 +1164,15 @@ public:
 					b = atof(drop_out_db[i][j + 5].c_str()) - slope * l;
 					tc.PHET2 = slope * quant + b;
 					tc.PHET0 = full - (tc.PHET1 + tc.PHET2);
+
+					if (term == 'n') {
+						tc.PN_PHET2 = tc.PHET2;
+						tc.PN_PHET0 = tc.PHET0;
+					}
+					else if (term == 'd') {
+						tc.PD_PHET2 = tc.PHET2;
+						tc.PD_PHET0 = tc.PHET0;
+					}
 				}
 				else if (drop_out_db[i][j] == "HET2-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 250 && quant <= 500) {
 					double b(0.0), l(250.0), h(500.0);
@@ -1102,6 +1180,15 @@ public:
 					b = atof(drop_out_db[i][j + 6].c_str()) - slope * l;
 					tc.PHET2 = slope * quant + b;
 					tc.PHET0 = full - (tc.PHET1 + tc.PHET2);
+
+					if (term == 'n') {
+						tc.PN_PHET2 = tc.PHET2;
+						tc.PN_PHET0 = tc.PHET0;
+					}
+					else if (term == 'd') {
+						tc.PD_PHET2 = tc.PHET2;
+						tc.PD_PHET0 = tc.PHET0;
+					}
 				}
 				else if (drop_out_db[i][j] == "HET2-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 6.25 && quant < 12.5) { // Single Source
 					double b(0.0), l(6.25), h(12.5);
@@ -1109,6 +1196,15 @@ public:
 					b = atof(drop_out_db[i][j + 8].c_str()) - slope * l;
 					tc.PHET2 = slope * quant + b;
 					tc.PHET0 = full - (tc.PHET1 + tc.PHET2);
+
+					if (term == 'n') {
+						tc.PN_PHET2 = tc.PHET2;
+						tc.PN_PHET0 = tc.PHET0;
+					}
+					else if (term == 'd') {
+						tc.PD_PHET2 = tc.PHET2;
+						tc.PD_PHET0 = tc.PHET0;
+					}
 				}
 				else if (drop_out_db[i][j] == "HET2-" + to_string(contributors) + "-" + dnd && drop_out_db[i][j + 1] == locus && quant >= 12.5 && quant < 25) {
 					double b(0.0), l(12.5), h(25.0);
@@ -1116,8 +1212,34 @@ public:
 					b = atof(drop_out_db[i][j + 9].c_str()) - slope * l;
 					tc.PHET2 = slope * quant + b;
 					tc.PHET0 = full - (tc.PHET1 + tc.PHET2);
+
+					if (term == 'n') {
+						tc.PN_PHET2 = tc.PHET2;
+						tc.PN_PHET0 = tc.PHET0;
+					}
+					else if (term == 'd') {
+						tc.PD_PHET2 = tc.PHET2;
+						tc.PD_PHET0 = tc.PHET0;
+					}
 				}
 			}
+		}
+	}
+
+	void swap_drop_out_rates(char term) {
+		if (term == 'n') {
+			tc.PHET0 = tc.PN_PHET0;
+			tc.PHET1 = tc.PN_PHET1;
+			tc.PHET2 = tc.PN_PHET2;
+			tc.PHOM0 = tc.PN_PHOM0;
+			tc.PHOM1 = tc.PN_PHOM1;
+		}
+		else if (term == 'd') {
+			tc.PHET0 = tc.PD_PHET0;
+			tc.PHET1 = tc.PD_PHET1;
+			tc.PHET2 = tc.PD_PHET2;
+			tc.PHOM0 = tc.PD_PHOM0;
+			tc.PHOM1 = tc.PD_PHOM1;
 		}
 	}
 
@@ -1151,7 +1273,7 @@ private:
 	friend Genotypes;
 	friend Person;
 
-	friend double run_LAST(csv_database& allele_database, csv_database& drop_out_db, csv_database& drop_in_db);
+	friend tuple<double, double, double> run_LAST(csv_database& allele_database, csv_database& drop_out_db, csv_database& drop_in_db);
 };
 
 // Returns double
@@ -1219,7 +1341,7 @@ double read_csv_x_rows(csv_database& db, string db_name, int rows) {		// Reads x
 }
 
 // Returns bool
-bool get_data(csv_database& evidence_db, csv_database& allele_db, vector<vector<Allele>>& replicates, vector<Allele>& distinct_alleles, vector<Person>& knowns_pn, vector<Person>& knowns_pd, int& unknowns_pn, int& unknowns_pd, double& quant, string& case_name, string& locus, int& contributors_pn, int& contributors_pd, Thread_Constants& tc) {
+bool get_data(csv_database& evidence_db, csv_database& allele_db, vector<vector<Allele>>& replicates, vector<Allele>& distinct_alleles, vector<Person>& knowns_pn, vector<Person>& knowns_pd, int& unknowns_pn, int& unknowns_pd, double& quant, string& case_name, string& locus, int& contributors_pn, int& contributors_pd, int& contributors, Thread_Constants& tc) {
 	vector<Allele> one_replicate;
 	vector<Allele> pn_tmp;			// Temporary container for numerator known alleles
 	vector<Allele> pd_tmp;			// Temporary container for denominator known alleles
@@ -1241,6 +1363,8 @@ bool get_data(csv_database& evidence_db, csv_database& allele_db, vector<vector<
 			contributors_pn = atof(evidence_db[1][i].c_str());
 		else if (evidence_db[0][i] == "Contributors Pd" || evidence_db[0][i] == "Contributor Pd")
 			contributors_pd = atof(evidence_db[1][i].c_str());
+		else if (evidence_db[0][i] == "Contributors" || evidence_db[0][i] == "Contributor")
+			contributors = atof(evidence_db[1][i].c_str());
 		else if (evidence_db[0][i] == "Run Type" || evidence_db[0][i] == "Run Speed" || evidence_db[0][i] == "Speed") {
 			if (evidence_db[1][i] == "Full" || evidence_db[1][i] == "F" || evidence_db[1][i] == "f" || evidence_db[1][i] == "FULL")
 				tc.RUN_TYPE = 'F';
@@ -1336,7 +1460,7 @@ bool get_data(csv_database& evidence_db, csv_database& allele_db, vector<vector<
 }
 
 // Returns double
-double run_LAST(csv_database& allele_database, csv_database& drop_out_db, csv_database& drop_in_db) {
+tuple<double, double, double> run_LAST(csv_database& allele_database, csv_database& drop_out_db, csv_database& drop_in_db) {
 	Thread_Constants tc;
 	tc.RACE = RACE;
 	++RACE;
@@ -1376,22 +1500,28 @@ double run_LAST(csv_database& allele_database, csv_database& drop_out_db, csv_da
 	read_csv_x_rows(evidence_database, "Evidence_" + to_string(FILE_NUM) + ".csv", 2);
 
 	vector<Person> knowns_pn, knowns_pd;
-	int unknowns_pn(1), unknowns_pd(1), contributors_pn(-1), contributors_pd(-1);
+	int unknowns_pn(0), unknowns_pd(0), contributors_pn(-1), contributors_pd(-1), contributors(-1);
 	vector<vector<Allele>> replicates;
 	vector<Allele> alleles;
 	double quant(100.0);
 	string dnd("ND"), case_name("<Name>"), locus("W");
 
-	bool data_done = get_data(evidence_database, allele_database, replicates, alleles, knowns_pn, knowns_pd, unknowns_pn, unknowns_pd, quant, case_name, locus, contributors_pn, contributors_pd, tc);
+	bool data_done = get_data(evidence_database, allele_database, replicates, alleles, knowns_pn, knowns_pd, unknowns_pn, unknowns_pd, quant, case_name, locus, contributors_pn, contributors_pd, contributors, tc);
+
+	if (contributors != -1 && contributors_pn == -1) contributors_pn = contributors;
+	if (contributors != -1 && contributors_pd == -1) contributors_pd = contributors;
 
 	if (contributors_pn == -1) contributors_pn = knowns_pn.size() + unknowns_pn;
 	if (contributors_pd == -1) contributors_pd = knowns_pd.size() + unknowns_pd;
 	CONTRIBUTORS_PN = contributors_pn;
 	CONTRIBUTORS_PD = contributors_pd;
 
+	if (unknowns_pn == 0) unknowns_pn = contributors_pn - knowns_pn.size();
+	if (unknowns_pd == 0) unknowns_pd = contributors_pd - knowns_pd.size();
+
 	if (!data_done) {
 		cout << "Error in case file. LR given will be 0." << endl;
-		return -1;
+		return tuple<double, double, double> (-1.0, -1.0, -1.0);		// Error in data
 	}
 
 	if (quant <= 100) {					// QUANT of 100 will be run as low copy
@@ -1414,12 +1544,11 @@ double run_LAST(csv_database& allele_database, csv_database& drop_out_db, csv_da
 	Genotypes genotypes(alleles);
 	Report report(drop_out_db, knowns_pn, unknowns_pn, knowns_pd, unknowns_pd, genotypes, replicates, case_name, locus, tc);
 
-	return report.lr;
+	return tuple<double, double, double> (report.lr, report.pn, report.pd);
 }
 
 int main() {
-	Timer t;
-	t.reset();
+	Timer t, c;
 
 	cout << "///////////////////////////////////////////////////////" << endl;
 	cout << "//" << endl;
@@ -1443,12 +1572,16 @@ int main() {
 	system(s_drop_out_rates.c_str());
 	string s_drop_in_rates = "copy Drop_In_Rates.csv " + DATE_TIME;
 	system(s_drop_in_rates.c_str());
+	string s_case = "copy case.csv " + DATE_TIME;
+	system(s_case.c_str());
 
 	ofstream ofs(DATE_TIME + "/output.csv");
 	ofs.close();
 	ofs.open(DATE_TIME + "/output.csv", ios::app);
+	ofs << "Case Name,Locus,Race,,LR,Pn,Pd,,Time (seconds),,Pn HET0,Pn HET1,Pn HET2,Pn HOM0,Pn HOM1,,Pd HET0,Pd HET1,Pd HET2,Pd HOM0,Pd HOM1" << endl;
 
-	double LR_b(1.0), LR_c(1.0), LR_h(1.0), LR_a(1.0);
+	//double LR_b(1.0), LR_c(1.0), LR_h(1.0), LR_a(1.0);
+	tuple<double, double, double> B(1.0, 1.0, 1.0), C(1.0, 1.0, 1.0), H(1.0, 1.0, 1.0), A(1.0, 1.0, 1.0);
 
 	csv_database allele_database(6);
 	read_csv(allele_database, "Allele_Frequencies.csv");
@@ -1463,42 +1596,86 @@ int main() {
 		ifstream ifs("Evidence_" + to_string(FILE_NUM) + ".csv");
 		if (ifs) {
 
-			cout << "\nRunning Analysis for Black for Evidence " << FILE_NUM << endl;
-			std::future<double> ret_b = std::async(&run_LAST, allele_database, drop_out_rates_database, drop_in_rates_database);
+			cout << "Running Analysis for Black for Evidence " << FILE_NUM << endl;
+			std::future<tuple<double, double, double>> ret_b = std::async(&run_LAST, allele_database, drop_out_rates_database, drop_in_rates_database);
+			//std::future<double> ret_b = std::async(&run_LAST, allele_database, drop_out_rates_database, drop_in_rates_database);
 			//LR_b *= run_LAST(allele_database, drop_out_rates_database, drop_in_rates_database);
 			//++RACE;
 
-			cout << "\nRunning Analysis for Caucasian for Evidence " << FILE_NUM << endl;
-			std::future<double> ret_c = std::async(&run_LAST, allele_database, drop_out_rates_database, drop_in_rates_database);
+			cout << "Running Analysis for Caucasian for Evidence " << FILE_NUM << endl;
+			std::future<tuple<double, double, double>> ret_c = std::async(&run_LAST, allele_database, drop_out_rates_database, drop_in_rates_database);
+			//std::future<double> ret_c = std::async(&run_LAST, allele_database, drop_out_rates_database, drop_in_rates_database);
 			//LR_c *= run_LAST(allele_database, drop_out_rates_database, drop_in_rates_database);
 			//++RACE;
 
-			cout << "\nRunning Analysis for Hispanic for Evidence " << FILE_NUM << endl;
-			std::future<double> ret_h = std::async(&run_LAST, allele_database, drop_out_rates_database, drop_in_rates_database);
+			cout << "Running Analysis for Hispanic for Evidence " << FILE_NUM << endl;
+			std::future<tuple<double, double, double>> ret_h = std::async(&run_LAST, allele_database, drop_out_rates_database, drop_in_rates_database);
+			//std::future<double> ret_h = std::async(&run_LAST, allele_database, drop_out_rates_database, drop_in_rates_database);
 			//LR_h *= run_LAST(allele_database, drop_out_rates_database, drop_in_rates_database);
 			//++RACE;
 
-			cout << "\nRunning Analysis for Asian for Evidence " << FILE_NUM << endl;
-			std::future<double> ret_a = std::async(&run_LAST, allele_database, drop_out_rates_database, drop_in_rates_database);
+			cout << "Running Analysis for Asian for Evidence " << FILE_NUM << endl;
+			std::future<tuple<double, double, double>> ret_a = std::async(&run_LAST, allele_database, drop_out_rates_database, drop_in_rates_database);
+			//std::future<double> ret_a = std::async(&run_LAST, allele_database, drop_out_rates_database, drop_in_rates_database);
 			//LR_a *= run_LAST(allele_database, drop_out_rates_database, drop_in_rates_database);
 			//RACE = 1;
 
-			LR_b *= ret_b.get();
-			LR_c *= ret_c.get();
-			LR_h *= ret_h.get();
-			LR_a *= ret_a.get();
+			//LR_b *= ret_b.get();
+			//LR_c *= ret_c.get();
+			//LR_h *= ret_h.get();
+			//LR_a *= ret_a.get();
+			tuple<double, double, double> rb = ret_b.get();
+			tuple<double, double, double> rc = ret_c.get();
+			tuple<double, double, double> rh = ret_h.get();
+			tuple<double, double, double> ra = ret_a.get();
+
+			std::get<0>(B) *= std::get<0>(rb);
+			std::get<1>(B) *= std::get<1>(rb);
+			std::get<2>(B) *= std::get<2>(rb);
+			std::get<0>(C) *= std::get<0>(rc);
+			std::get<1>(C) *= std::get<1>(rc);
+			std::get<2>(C) *= std::get<2>(rc);
+			std::get<0>(H) *= std::get<0>(rh);
+			std::get<1>(H) *= std::get<1>(rh);
+			std::get<2>(H) *= std::get<2>(rh);
+			std::get<0>(A) *= std::get<0>(ra);
+			std::get<1>(A) *= std::get<1>(ra);
+			std::get<2>(A) *= std::get<2>(ra);
 		}
 		else
 			run = false;
 
 		if (FILE_NUM % PRODUCT_GROUP == 0) {		// Calculate likelihood ratio once PRODUCT_GROUP-number of files (or loci) has been evaluated - this is one full case
-			cout << "\nBlack: " << LR_b << " Caucasian: " << LR_c << " Hispanic: " << LR_h << " Asian: " << LR_a << endl;
-			ofs << "\nOverall LR,," << PRODUCT_GROUP << ",Files" << endl;
-			ofs << "\nBlack:," << LR_b << ",,Caucasian:," << LR_c << ",,Hispanic:," << LR_h << ",,Asian:," << LR_a << endl << endl;
-			LR_b = 1.0;
-			LR_c = 1.0;
-			LR_h = 1.0;
-			LR_a = 1.0;
+			//cout << "\nBlack: " << LR_b << " Caucasian: " << LR_c << " Hispanic: " << LR_h << " Asian: " << LR_a << endl;
+			//ofs << "\nOverall LR,," << PRODUCT_GROUP << ",Files" << endl;
+			//ofs << "\nBlack:," << LR_b << ",,Caucasian:," << LR_c << ",,Hispanic:," << LR_h << ",,Asian:," << LR_a << endl << endl;
+			cout << endl;
+			cout << "Overall: " << PRODUCT_GROUP << " Files - BLACK - LR: " << std::get<1>(B) << " - Pn: " << std::get<2>(B) << " - Pd: " << std::get<0>(B) << endl;
+			cout << "Overall: " << PRODUCT_GROUP << " Files - CAUCASIAN - LR: " << std::get<1>(C) << " - Pn: " << std::get<2>(C) << " - Pd: " << std::get<0>(C) << endl;
+			cout << "Overall: " << PRODUCT_GROUP << " Files - HISPANIC - LR: " << std::get<1>(H) << " - Pn: " << std::get<2>(H) << " - Pd: " << std::get<0>(H) << endl;
+			cout << "Overall: " << PRODUCT_GROUP << " Files - ASIAN: - LR: " << std::get<1>(A) << " - Pn: " << std::get<2>(A) << " - Pd: " << std::get<0>(A) << endl;
+			double case_time = c.elapsed();
+			ofs << "Overall:," << PRODUCT_GROUP << " Files,BLACK,," << std::get<0>(B) << "," << std::get<1>(B) << "," << std::get<2>(B) << ",," << case_time << endl;
+			ofs << "Overall:," << PRODUCT_GROUP << " Files,CAUCASIAN,," << std::get<0>(C) << "," << std::get<1>(C) << "," << std::get<2>(C) << ",," << case_time << endl;
+			ofs << "Overall:," << PRODUCT_GROUP << " Files,HISPANIC,," << std::get<0>(H) << "," << std::get<1>(H) << "," << std::get<2>(H) << ",," << case_time << endl;
+			ofs << "Overall:," << PRODUCT_GROUP << " Files,ASIAN,," << std::get<0>(A) << "," << std::get<1>(A) << "," << std::get<2>(A) << ",," << case_time << endl;
+			//LR_b = 1.0;
+			//LR_c = 1.0;
+			//LR_h = 1.0;
+			//LR_a = 1.0;
+			std::get<0>(B) = 1.0;
+			std::get<1>(B) = 1.0;
+			std::get<2>(B) = 1.0;
+			std::get<0>(C) = 1.0;
+			std::get<1>(C) = 1.0;
+			std::get<2>(C) = 1.0;
+			std::get<0>(H) = 1.0;
+			std::get<1>(H) = 1.0;
+			std::get<2>(H) = 1.0;
+			std::get<0>(A) = 1.0;
+			std::get<1>(A) = 1.0;
+			std::get<2>(A) = 1.0;
+			c.reset();
 		}
 		++FILE_NUM;
 	}
