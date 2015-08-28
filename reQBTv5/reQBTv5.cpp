@@ -1,6 +1,6 @@
 //	
 //	This tool can be used to achieve likelihood ratio for suspect(knowns_pn) and/or victim(knowns_pn) in a DNA mixture using probabilistic genotyping
-//	Probabilistic Genotyping Program (C) 2015 Munieshwar Ramdass, Nicholas Corpuz, Khagay Nagdimov
+//	re-engineered Quant-Based Tool (C) 2015 Munieshwar Ramdass, Nicholas Corpuz, Khagay Nagdimov
 //	
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
