@@ -167,10 +167,10 @@ public:
 		: alleles(distinct_alleles) {
 
 		//if (distinct_alleles.size() == 0)
-		//alleles.push_back(Allele("W", -1, 1.0));
+			//alleles.push_back(Allele("W", -1, 1.0));
 		//else
-		//for (int i(0); i < distinct_alleles.size(); ++i)
-		//alleles.push_back(distinct_alleles[i]);
+			//for (int i(0); i < distinct_alleles.size(); ++i)
+				//alleles.push_back(distinct_alleles[i]);
 
 		generate_allele_pairs();
 		generate_freqs();
@@ -268,11 +268,16 @@ public:
 
 		Timer t;
 		t.reset();
-
+		
 		ofstream ofs, efs;
 		ofs.open(DATE_TIME + "/output.csv", ios::app);
+
+		for (int i(0); i < case_name.size(); ++i)
+			if (this->case_name[i] == '/')
+				this->case_name[i] = '-';
+		
 		if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C')
-			efs.open(DATE_TIME + "/Evidence_" + to_string(FILE_NUM) + "_" + to_string(tc.RACE) + "_" + locus + "_" + case_name + ".csv", ios::app);
+			efs.open(DATE_TIME + "/Evidence_" + to_string(FILE_NUM) + "_" + to_string(tc.RACE) + "_" + locus + "_" + this->case_name + ".csv", ios::app);
 
 		vector<int> tmp;	// Handling absence of distinct alleles
 		for (int i(0); i < genotypes.allele_comb.size(); ++i)
@@ -289,21 +294,23 @@ public:
 		allocate_population_space();
 
 		generate_persons();
-
+		
 		generate_populations();
-
+		
 		vector<Person> wild_vector;
 		if (persons[0].a.length == -1 && persons[0].b.length == -1) {
 			population_pn.clear();
 			for (int i(0); i < knowns_pn.size() + unknowns_pn; ++i)
 				wild_vector.push_back(persons[0]);
 			population_pn.push_back(wild_vector);
+			wild_vector.clear();
 		}
 		if (persons[0].a.length == -1 && persons[0].b.length == -1) {
 			population_pd.clear();
 			for (int i(0); i < knowns_pd.size() + unknowns_pd; ++i)
 				wild_vector.push_back(persons[0]);
 			population_pd.push_back(wild_vector);
+			wild_vector.clear();
 		}
 
 		check_person();
@@ -412,7 +419,7 @@ public:
 		ofs << "\n,HET0:," << tc.PHET0 << ",,pC0:," << PC0 << "\n,HET1:," << tc.PHET1 << ",,pC1:," << PC1
 			<< "\n,HET2:," << tc.PHET2 << ",,pC2:," << PC2 << "\n,HOM0:," << tc.PHOM0 << "\n,HOM1:," << tc.PHOM1
 			<< ",,Theta:," << HOM_CONST << endl << endl;
-
+		
 		for (int i(0); i < population_pd[0].size(); ++i)
 			if (i >= (unknowns_pd + knowns_pd.size()) - ((unknowns_pd + knowns_pd.size()) - knowns_pd.size()))
 				ofs << "Genotype Freq,";
@@ -1650,10 +1657,10 @@ int main() {
 			//ofs << "\nOverall LR,," << PRODUCT_GROUP << ",Files" << endl;
 			//ofs << "\nBlack:," << LR_b << ",,Caucasian:," << LR_c << ",,Hispanic:," << LR_h << ",,Asian:," << LR_a << endl << endl;
 			cout << endl;
-			cout << "Overall: " << PRODUCT_GROUP << " Files - BLACK - LR: " << std::get<1>(B) << " - Pn: " << std::get<2>(B) << " - Pd: " << std::get<0>(B) << endl;
-			cout << "Overall: " << PRODUCT_GROUP << " Files - CAUCASIAN - LR: " << std::get<1>(C) << " - Pn: " << std::get<2>(C) << " - Pd: " << std::get<0>(C) << endl;
-			cout << "Overall: " << PRODUCT_GROUP << " Files - HISPANIC - LR: " << std::get<1>(H) << " - Pn: " << std::get<2>(H) << " - Pd: " << std::get<0>(H) << endl;
-			cout << "Overall: " << PRODUCT_GROUP << " Files - ASIAN: - LR: " << std::get<1>(A) << " - Pn: " << std::get<2>(A) << " - Pd: " << std::get<0>(A) << endl;
+			cout << "Overall: " << PRODUCT_GROUP << " Files - BLACK - LR: " << std::get<0>(B) << " - Pn: " << std::get<1>(B) << " - Pd: " << std::get<2>(B) << endl;
+			cout << "Overall: " << PRODUCT_GROUP << " Files - CAUCASIAN - LR: " << std::get<0>(C) << " - Pn: " << std::get<1>(C) << " - Pd: " << std::get<2>(C) << endl;
+			cout << "Overall: " << PRODUCT_GROUP << " Files - HISPANIC - LR: " << std::get<0>(H) << " - Pn: " << std::get<1>(H) << " - Pd: " << std::get<2>(H) << endl;
+			cout << "Overall: " << PRODUCT_GROUP << " Files - ASIAN: - LR: " << std::get<0>(A) << " - Pn: " << std::get<1>(A) << " - Pd: " << std::get<2>(A) << endl;
 			double case_time = c.elapsed();
 			ofs << "Overall:," << PRODUCT_GROUP << " Files,BLACK,," << std::get<0>(B) << "," << std::get<1>(B) << "," << std::get<2>(B) << ",," << case_time << endl;
 			ofs << "Overall:," << PRODUCT_GROUP << " Files,CAUCASIAN,," << std::get<0>(C) << "," << std::get<1>(C) << "," << std::get<2>(C) << ",," << case_time << endl;
