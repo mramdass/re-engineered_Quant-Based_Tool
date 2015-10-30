@@ -276,8 +276,44 @@ public:
 			if (this->case_name[i] == '/')
 				this->case_name[i] = '-';
 		
-		if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C')
+		if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') {
 			efs.open(DATE_TIME + "/Evidence_" + to_string(FILE_NUM) + "_" + to_string(tc.RACE) + "_" + locus + "_" + this->case_name + ".csv", ios::app);
+			
+			efs << "Case Name:," << case_name << "\nLocus:," << locus << "\nQuant:," << QUANT << "\nPn size:," << (knowns_pn.size() + unknowns_pn) << "\nPd size:," << (knowns_pd.size() + unknowns_pd) << endl;
+			if (DEDUCIBLE) efs << "Dedicible?,YES" << endl;
+			else efs << "Dedicible?,NO" << endl;
+			efs << "Race:,";
+			if (tc.RACE == 1)
+				efs << "BLACK" << endl;
+			else if (tc.RACE == 2)
+				efs << "CAUCASIAN" << endl;
+			else if (tc.RACE == 3)
+				efs << "HISPANIC" << endl;
+			else if (tc.RACE == 4)
+				efs << "ASIAN" << endl;
+			efs << "Known(s) Pn:" << endl;
+			if (knowns_pn.size() == 0) efs << ",No Knowns Pn" << endl;
+			efs << ",";
+			for (int i(0); i < knowns_pn.size(); ++i) {
+				efs << "Person " << (i + 1) << ",(" << knowns_pn[i].a.length << "; " << knowns_pn[i].b.length << ")" << endl;
+			}
+			efs << "Known(s) Pn:" << endl;
+			if (knowns_pd.size() == 0) efs << ",No Knowns Pd" << endl;
+			efs << ",";
+			for (int i(0); i < knowns_pd.size(); ++i) {
+				efs << "Person " << (i + 1) << ",(" << knowns_pd[i].a.length << "; " << knowns_pd[i].b.length << ")" << endl;
+			}
+			efs << "\nReplicate(s):" << endl;
+			for (int i(0); i < replicates.size(); ++i) {
+				efs << ",Replicate " << (i + 1) << ",";
+				for (int j(0); j < replicates[i].size(); ++j) {
+					efs << replicates[i][j].length << ";";
+				}
+				efs << endl;
+			}
+			efs << endl;
+
+		}
 
 		vector<int> tmp;	// Handling absence of distinct alleles
 		for (int i(0); i < genotypes.allele_comb.size(); ++i)
@@ -314,6 +350,12 @@ public:
 		}
 
 		check_person();
+
+		if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') {
+			efs << "\nGenotype Freq:" << endl;
+			for (int i(0); i < persons.size(); ++i)
+				efs << ",(" << persons[i].a.length << "; " << persons[i].b.length << "),(" << persons[i].a.freq << "; " << persons[i].b.freq << ")," << persons[i].freq << endl;
+		}
 
 		bool pn_done(false), pd_done(false);
 		if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M') {
@@ -363,14 +405,7 @@ public:
 		}
 
 		if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') {
-			efs << "\nLocus:," << locus << ",,Quant:," << QUANT << ",,Deducible:," << DEDUCIBLE << endl;
-			for (int i(0); i < knowns_pn.size(); ++i)
-				efs << ",Known Pn:," << knowns_pn[i].a.length << "," << knowns_pn[i].b.length << endl;
-			for (int i(0); i < knowns_pd.size(); ++i)
-				efs << ",Known Pd:," << knowns_pd[i].a.length << "," << knowns_pd[i].b.length << endl;
-			efs << "\nGenotype Freq" << endl;
-			for (int i(0); i < persons.size(); ++i)
-				efs << ",(" << persons[i].a.length << "," << persons[i].b.length << "),(" << persons[i].a.freq << "," << persons[i].b.freq << ")," << persons[i].freq << endl;
+			
 			efs << "\n,,LR:," << lr << ",,Pn:," << pn << ",,Pd:," << pd << endl << endl;
 
 			if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'C') {
@@ -378,10 +413,10 @@ public:
 					for (int j(0); j < numerators.size(); ++j) {
 						efs << ",LR:," << numerators[j].first / denominators[i].first << ",,Pn:," << numerators[j].first << ",,Pd:," << denominators[i].first << ",,";
 						for (int k(0); k < numerators[j].second.size(); ++k)
-							efs << numerators[j].second[k].a.length << "," << numerators[j].second[k].b.length << ",,";
+							efs << "(" << numerators[j].second[k].a.length << "; " << numerators[j].second[k].b.length << "),,";
 						efs << unknowns_pn << ",Uknown(s) Pn,,";
 						for (int k(0); k < denominators[i].second.size(); ++k)
-							efs << denominators[i].second[k].a.length << "," << denominators[i].second[k].b.length << ",,";
+							efs << "(" << denominators[i].second[k].a.length << "; " << denominators[i].second[k].b.length << "),,";
 						efs << unknowns_pd << ",Uknown(s) Pd" << endl;
 					}
 					efs << endl;
@@ -414,15 +449,16 @@ public:
 
 		ofstream ofs;
 		ofs.open(DATE_TIME + "/Evidence_" + to_string(FILE_NUM) + "_" + to_string(tc.RACE) + "_" + locus + "_" + case_name + ".csv", ios::app);
-		ofs << "\nCase:," << case_name << "," << locus << endl;
+		
 		ofs << "\nDenominator:" << endl;
 		ofs << "\n,HET0:," << tc.PHET0 << ",,pC0:," << PC0 << "\n,HET1:," << tc.PHET1 << ",,pC1:," << PC1
 			<< "\n,HET2:," << tc.PHET2 << ",,pC2:," << PC2 << "\n,HOM0:," << tc.PHOM0 << "\n,HOM1:," << tc.PHOM1
 			<< ",,Theta:," << HOM_CONST << endl << endl;
 		
+		
 		for (int i(0); i < population_pd[0].size(); ++i)
 			if (i >= (unknowns_pd + knowns_pd.size()) - ((unknowns_pd + knowns_pd.size()) - knowns_pd.size()))
-				ofs << "Genotype Freq,";
+				ofs << ",Person " << (i + 1) << ",Genotype Freq,";
 		ofs << ",";
 		for (int i(0); i < population_pd[0].size(); ++i) {
 			for (int j(0); j < replicates.size(); ++j)
@@ -438,7 +474,7 @@ public:
 				for (int j(0); j < population_pd[i].size(); ++j) {	// MULTIPLY PERSONS FREQ
 					if (j >= (unknowns_pd + knowns_pd.size()) - ((unknowns_pd + knowns_pd.size()) - knowns_pd.size())) {
 						product *= population_pd[i][j].freq;
-						ofs << population_pd[i][j].freq << ",";
+						ofs << ",(" << population_pd[i][j].a.length << "; " << population_pd[i][j].b.length << ")," << population_pd[i][j].freq << ",";
 					}
 
 					//ofs << population_pd[i][j].freq << ",";
@@ -478,7 +514,7 @@ public:
 
 		ofstream ofs;
 		ofs.open(DATE_TIME + "/Evidence_" + to_string(FILE_NUM) + "_" + to_string(tc.RACE) + "_" + locus + "_" + case_name + ".csv", ios::app);
-		ofs << "\nCase:," << case_name << "," << locus << endl;
+		
 		ofs << "\nNumerator:" << endl;
 		ofs << "\n,HET0:," << tc.PHET0 << ",,pC0:," << PC0 << "\n,HET1:," << tc.PHET1 << ",,pC1:," << PC1
 			<< "\n,HET2:," << tc.PHET2 << ",,pC2:," << PC2 << "\n,HOM0:," << tc.PHOM0 << "\n,HOM1:," << tc.PHOM1
@@ -486,15 +522,15 @@ public:
 
 		for (int i(0); i < population_pn[0].size(); ++i)
 			if (i >= (unknowns_pn + knowns_pn.size()) - ((unknowns_pn + knowns_pn.size()) - knowns_pn.size()))
-				ofs << "Genotype Freq,";
+				ofs << ",Person " << (i + 1) << ",Genotype Freq,";
 		ofs << ",";
 		for (int i(0); i < population_pn[0].size(); ++i) {
 			for (int j(0); j < replicates.size(); ++j)
-				ofs << "Drop-Out,";
+				ofs << "Drop-Out P" << (i + 1) << " R" << (j + 1) << ",";
 			ofs << ",";
 		}
 		for (int i(0); i < replicates.size(); ++i)
-			ofs << "Drop-In,";
+			ofs << "Drop-In R" << (i + 1) << ",";
 		ofs << ",Row Product" << endl;
 
 		for (int i(0); i < population_pn.size(); ++i) {
@@ -502,7 +538,7 @@ public:
 				for (int j(0); j < population_pn[i].size(); ++j) {	// MULTIPLY PERSONS FREQ
 					if (j >= (unknowns_pn + knowns_pn.size()) - ((unknowns_pn + knowns_pn.size()) - knowns_pn.size())) {
 						product *= population_pn[i][j].freq;
-						ofs << population_pn[i][j].freq << ",";
+						ofs << ",(" << population_pn[i][j].a.length << "; " << population_pn[i][j].b.length << ")," << population_pn[i][j].freq << ",";
 					}
 
 					//ofs << population_pn[i][j].freq << ",";
@@ -881,24 +917,33 @@ public:
 
 		cout << "\n\tGenerating Scenarios with " << pn_combinations.size() << " different numerator(s) and\n\t"
 			<< pd_combinations.size() << " different denominator(s).\n\tThis will take some time." << endl;
+		numerators = vector<pair<double, vector<Person>>>(pn_combinations.size());
+		denominators = vector<pair<double, vector<Person>>>(pd_combinations.size());
 
+		parallel_for(size_t(0), pn_combinations.size(), [&](size_t i) {
+			generate_px(drop_out_db, pn_combinations[i], 'n', i);
+		});
+		/*
 		for (int i(0); i < pn_combinations.size(); ++i)
-			generate_px(drop_out_db, pn_combinations[i], 'n');
+			generate_px(drop_out_db, pn_combinations[i], 'n', i);
+		*/
 
-		cout << "\tAlmost there..." << endl;
-
+		parallel_for(size_t(0), pd_combinations.size(), [&](size_t i) {
+			generate_px(drop_out_db, pd_combinations[i], 'd', i);
+		});
+		/*
 		for (int i(0); i < pd_combinations.size(); ++i)
-			generate_px(drop_out_db, pd_combinations[i], 'd');
-
+			generate_px(drop_out_db, pd_combinations[i], 'd', i);
+		*/
 		cout << "\tEnding..." << endl;
 	}
 
-	bool generate_px(csv_database& drop_out_db, vector<Person>& knowns, char known_ID) {		// The generic function that chould have been used if last few lines are modified
+	bool generate_px(csv_database& drop_out_db, vector<Person>& knowns, char known_ID, int index) {		// The generic function that chould have been used if last few lines are modified
 		if (known_ID == 'n') swap_drop_out_rates('n');
 		else if (known_ID == 'd') swap_drop_out_rates('d');
 		
 		double product(1.0), sum(0.0);
-
+		
 		for (int i(0); i < population_pn.size(); ++i) {
 			if (is_subset_px(i, knowns, known_ID)) {
 				for (int j(0); j < population_pn[i].size(); ++j)	// MULTIPLY PERSONS FREQ
@@ -916,9 +961,11 @@ public:
 				product = 1.0;
 			}
 		}
-		if (known_ID == 'n') numerators.push_back(pair<double, vector<Person>>(sum, knowns));
-		else if (known_ID == 'd') denominators.push_back(pair<double, vector<Person>>(sum, knowns));
-
+		//if (known_ID == 'n') numerators.push_back(pair<double, vector<Person>>(sum, knowns));
+		//else if (known_ID == 'd') denominators.push_back(pair<double, vector<Person>>(sum, knowns));
+		if (known_ID == 'n') numerators[index] = pair<double, vector<Person>>(sum, knowns);
+		else if (known_ID == 'd') denominators[index] = pair<double, vector<Person>>(sum, knowns);
+		
 		return true;
 	}
 
