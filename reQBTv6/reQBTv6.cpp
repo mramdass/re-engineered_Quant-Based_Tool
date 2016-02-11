@@ -919,22 +919,22 @@ public:
 			<< pd_combinations.size() << " different denominator(s).\n\tThis will take some time." << endl;
 		numerators = vector<pair<double, vector<Person>>>(pn_combinations.size());
 		denominators = vector<pair<double, vector<Person>>>(pd_combinations.size());
-
+		/*
 		parallel_for(size_t(0), pn_combinations.size(), [&](size_t i) {
 			generate_px(drop_out_db, pn_combinations[i], 'n', i);
 		});
-		/*
+		*/
 		for (int i(0); i < pn_combinations.size(); ++i)
 			generate_px(drop_out_db, pn_combinations[i], 'n', i);
-		*/
-
+		
+		/*
 		parallel_for(size_t(0), pd_combinations.size(), [&](size_t i) {
 			generate_px(drop_out_db, pd_combinations[i], 'd', i);
 		});
-		/*
+		*/
 		for (int i(0); i < pd_combinations.size(); ++i)
 			generate_px(drop_out_db, pd_combinations[i], 'd', i);
-		*/
+		
 		cout << "\tEnding..." << endl;
 	}
 
