@@ -88,7 +88,7 @@ int CONTRIBUTORS_PD = 1;
 double MINIMUM_WILD_FREQUENCY = 0.001;	// Not constant
 
 int PRODUCT_GROUP = 15;				// Number of file LRs to multiple together in a group
-//char RUN_TYPE = 'E';				// Full, Moderate or Express run
+									//char RUN_TYPE = 'E';				// Full, Moderate or Express run
 
 string DATE_TIME = "Some Time";
 
@@ -123,7 +123,7 @@ private:
 	double PD_PHET2;
 	double PD_PHOM0;
 	double PD_PHOM1;
-	
+
 	friend Report;
 };
 
@@ -167,10 +167,10 @@ public:
 		: alleles(distinct_alleles) {
 
 		//if (distinct_alleles.size() == 0)
-			//alleles.push_back(Allele("W", -1, 1.0));
+		//alleles.push_back(Allele("W", -1, 1.0));
 		//else
-			//for (int i(0); i < distinct_alleles.size(); ++i)
-				//alleles.push_back(distinct_alleles[i]);
+		//for (int i(0); i < distinct_alleles.size(); ++i)
+		//alleles.push_back(distinct_alleles[i]);
 
 		generate_allele_pairs();
 		generate_freqs();
@@ -268,17 +268,17 @@ public:
 
 		Timer t;
 		t.reset();
-		
+
 		ofstream ofs, efs;
 		ofs.open(DATE_TIME + "/output.csv", ios::app);
 
 		for (int i(0); i < case_name.size(); ++i)
 			if (this->case_name[i] == '/')
 				this->case_name[i] = '-';
-		
+
 		if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') {
 			efs.open(DATE_TIME + "/Evidence_" + to_string(FILE_NUM) + "_" + to_string(tc.RACE) + "_" + locus + "_" + this->case_name + ".csv", ios::app);
-			
+
 			efs << "Case Name:," << case_name << "\nLocus:," << locus << "\nQuant:," << QUANT << "\nPn size:," << (knowns_pn.size() + unknowns_pn) << "\nPd size:," << (knowns_pd.size() + unknowns_pd) << endl;
 			if (DEDUCIBLE) efs << "Dedicible?,YES" << endl;
 			else efs << "Dedicible?,NO" << endl;
@@ -330,9 +330,9 @@ public:
 		allocate_population_space();
 
 		generate_persons();
-		
+
 		generate_populations();
-		
+
 		vector<Person> wild_vector;
 		if (persons[0].a.length == -1 && persons[0].b.length == -1) {
 			population_pn.clear();
@@ -394,7 +394,7 @@ public:
 			ofs << case_name << "," << locus << ",HISPANIC,," << lr << "," << pn << "," << pd << ",," << t.elapsed()
 				<< ",," << tc.PN_PHET0 << "," << tc.PN_PHET1 << "," << tc.PN_PHET2 << "," << tc.PN_PHOM0 << "," << tc.PN_PHOM1
 				<< ",," << tc.PD_PHET0 << "," << tc.PD_PHET1 << "," << tc.PD_PHET2 << "," << tc.PD_PHOM0 << "," << tc.PD_PHOM1 << endl;
-			if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') efs << "\nHISPANIC\n";	
+			if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') efs << "\nHISPANIC\n";
 		}
 		else if (tc.RACE == 4) {
 			cout << case_name << " - " << locus << " ASIAN - LR: " << lr << " - Pn: " << pn << " - Pd: " << pd << endl;
@@ -405,7 +405,7 @@ public:
 		}
 
 		if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'M' || tc.RUN_TYPE == 'C') {
-			
+
 			efs << "\n,,LR:," << lr << ",,Pn:," << pn << ",,Pd:," << pd << endl << endl;
 
 			if (tc.RUN_TYPE == 'F' || tc.RUN_TYPE == 'C') {
@@ -449,13 +449,13 @@ public:
 
 		ofstream ofs;
 		ofs.open(DATE_TIME + "/Evidence_" + to_string(FILE_NUM) + "_" + to_string(tc.RACE) + "_" + locus + "_" + case_name + ".csv", ios::app);
-		
+
 		ofs << "\nDenominator:" << endl;
 		ofs << "\n,HET0:," << tc.PHET0 << ",,pC0:," << PC0 << "\n,HET1:," << tc.PHET1 << ",,pC1:," << PC1
 			<< "\n,HET2:," << tc.PHET2 << ",,pC2:," << PC2 << "\n,HOM0:," << tc.PHOM0 << "\n,HOM1:," << tc.PHOM1
 			<< ",,Theta:," << HOM_CONST << endl << endl;
-		
-		
+
+
 		for (int i(0); i < population_pd[0].size(); ++i)
 			if (i >= (unknowns_pd + knowns_pd.size()) - ((unknowns_pd + knowns_pd.size()) - knowns_pd.size()))
 				ofs << ",Person " << (i + 1) << ",Genotype Freq,";
@@ -514,7 +514,7 @@ public:
 
 		ofstream ofs;
 		ofs.open(DATE_TIME + "/Evidence_" + to_string(FILE_NUM) + "_" + to_string(tc.RACE) + "_" + locus + "_" + case_name + ".csv", ios::app);
-		
+
 		ofs << "\nNumerator:" << endl;
 		ofs << "\n,HET0:," << tc.PHET0 << ",,pC0:," << PC0 << "\n,HET1:," << tc.PHET1 << ",,pC1:," << PC1
 			<< "\n,HET2:," << tc.PHET2 << ",,pC2:," << PC2 << "\n,HOM0:," << tc.PHOM0 << "\n,HOM1:," << tc.PHOM1
@@ -921,29 +921,29 @@ public:
 		denominators = vector<pair<double, vector<Person>>>(pd_combinations.size());
 		/*
 		parallel_for(size_t(0), pn_combinations.size(), [&](size_t i) {
-			generate_px(drop_out_db, pn_combinations[i], 'n', i);
+		generate_px(drop_out_db, pn_combinations[i], 'n', i);
 		});
 		*/
 		for (int i(0); i < pn_combinations.size(); ++i)
 			generate_px(drop_out_db, pn_combinations[i], 'n', i);
-		
+
 		/*
 		parallel_for(size_t(0), pd_combinations.size(), [&](size_t i) {
-			generate_px(drop_out_db, pd_combinations[i], 'd', i);
+		generate_px(drop_out_db, pd_combinations[i], 'd', i);
 		});
 		*/
 		for (int i(0); i < pd_combinations.size(); ++i)
 			generate_px(drop_out_db, pd_combinations[i], 'd', i);
-		
+
 		cout << "\tEnding..." << endl;
 	}
 
 	bool generate_px(csv_database& drop_out_db, vector<Person>& knowns, char known_ID, int index) {		// The generic function that chould have been used if last few lines are modified
 		if (known_ID == 'n') swap_drop_out_rates('n');
 		else if (known_ID == 'd') swap_drop_out_rates('d');
-		
+
 		double product(1.0), sum(0.0);
-		
+
 		for (int i(0); i < population_pn.size(); ++i) {
 			if (is_subset_px(i, knowns, known_ID)) {
 				for (int j(0); j < population_pn[i].size(); ++j)	// MULTIPLY PERSONS FREQ
@@ -965,7 +965,7 @@ public:
 		//else if (known_ID == 'd') denominators.push_back(pair<double, vector<Person>>(sum, knowns));
 		if (known_ID == 'n') numerators[index] = pair<double, vector<Person>>(sum, knowns);
 		else if (known_ID == 'd') denominators[index] = pair<double, vector<Person>>(sum, knowns);
-		
+
 		return true;
 	}
 
@@ -1469,7 +1469,7 @@ bool get_data(csv_database& evidence_db, csv_database& allele_db, vector<vector<
 		}
 		else if (evidence_db[0][i] == "REP" || evidence_db[0][i] == "rep" || evidence_db[0][i] == "Replicate") {
 			if (locus == "W") {
-				cout << "Move '" << evidence_db[0][i] <<"' column to the right of the 'Locus' column in the case file.";
+				cout << "Move '" << evidence_db[0][i] << "' column to the right of the 'Locus' column in the case file.";
 				return false;
 			}
 			istringstream csvCell(evidence_db[1][i]);
@@ -1480,7 +1480,10 @@ bool get_data(csv_database& evidence_db, csv_database& allele_db, vector<vector<
 					one_replicate.push_back(tmp_a);
 				}
 			}
-			replicates.push_back(one_replicate);
+			if (one_replicate.size() != 0) {
+				//sort(one_replicate.begin(), one_replicate.end());		// Not necessary
+				replicates.push_back(one_replicate);
+			}
 			one_replicate.clear();
 		}
 		else if (evidence_db[0][i] == "Alleles" || evidence_db[0][i] == "Distinct Alleles") {
@@ -1575,7 +1578,7 @@ tuple<double, double, double> run_LAST(csv_database& allele_database, csv_databa
 
 	if (!data_done) {
 		cout << "Error in case file. LR given will be 0." << endl;
-		return tuple<double, double, double> (-1.0, -1.0, -1.0);		// Error in data
+		return tuple<double, double, double>(-1.0, -1.0, -1.0);		// Error in data
 	}
 
 	if (quant <= 100) {					// QUANT of 100 will be run as low copy
@@ -1598,7 +1601,7 @@ tuple<double, double, double> run_LAST(csv_database& allele_database, csv_databa
 	Genotypes genotypes(alleles);
 	Report report(drop_out_db, knowns_pn, unknowns_pn, knowns_pd, unknowns_pd, genotypes, replicates, case_name, locus, tc);
 
-	return tuple<double, double, double> (report.lr, report.pn, report.pd);
+	return tuple<double, double, double>(report.lr, report.pn, report.pd);
 }
 
 int main() {
@@ -1700,9 +1703,9 @@ int main() {
 			run = false;
 
 		if (FILE_NUM % PRODUCT_GROUP == 0) {		// Calculate likelihood ratio once PRODUCT_GROUP-number of files (or loci) has been evaluated - this is one full case
-			//cout << "\nBlack: " << LR_b << " Caucasian: " << LR_c << " Hispanic: " << LR_h << " Asian: " << LR_a << endl;
-			//ofs << "\nOverall LR,," << PRODUCT_GROUP << ",Files" << endl;
-			//ofs << "\nBlack:," << LR_b << ",,Caucasian:," << LR_c << ",,Hispanic:," << LR_h << ",,Asian:," << LR_a << endl << endl;
+													//cout << "\nBlack: " << LR_b << " Caucasian: " << LR_c << " Hispanic: " << LR_h << " Asian: " << LR_a << endl;
+													//ofs << "\nOverall LR,," << PRODUCT_GROUP << ",Files" << endl;
+													//ofs << "\nBlack:," << LR_b << ",,Caucasian:," << LR_c << ",,Hispanic:," << LR_h << ",,Asian:," << LR_a << endl << endl;
 			cout << endl;
 			cout << "Overall: " << PRODUCT_GROUP << " Files - BLACK - LR: " << std::get<0>(B) << " - Pn: " << std::get<1>(B) << " - Pd: " << std::get<2>(B) << endl;
 			cout << "Overall: " << PRODUCT_GROUP << " Files - CAUCASIAN - LR: " << std::get<0>(C) << " - Pn: " << std::get<1>(C) << " - Pd: " << std::get<2>(C) << endl;
