@@ -1448,9 +1448,9 @@ bool get_data(csv_database& evidence_db, csv_database& allele_db, vector<vector<
 			string sub_cell;
 			while (getline(csvCell, sub_cell, ';')) {
 				Allele tmp_a(locus, atof(sub_cell.c_str()), get_input_freq(allele_db, locus, atof(sub_cell.c_str()), tc.RACE));
-				if (tmp_a.length != -1) {
-					pn_tmp.push_back(tmp_a);
-				}
+				//if (tmp_a.length != -1) {
+				pn_tmp.push_back(tmp_a);
+				//}
 			}
 		}
 		else if (evidence_db[0][i] == "Known Pd" || evidence_db[0][i] == "Knowns Pd") {
@@ -1462,9 +1462,9 @@ bool get_data(csv_database& evidence_db, csv_database& allele_db, vector<vector<
 			string sub_cell;
 			while (getline(csvCell, sub_cell, ';')) {
 				Allele tmp_a(locus, atof(sub_cell.c_str()), get_input_freq(allele_db, locus, atof(sub_cell.c_str()), tc.RACE));
-				if (tmp_a.length != -1) {
-					pd_tmp.push_back(tmp_a);
-				}
+				//if (tmp_a.length != -1) {
+				pd_tmp.push_back(tmp_a);
+				//}
 			}
 		}
 		else if (evidence_db[0][i] == "REP" || evidence_db[0][i] == "rep" || evidence_db[0][i] == "Replicate") {
@@ -1511,6 +1511,12 @@ bool get_data(csv_database& evidence_db, csv_database& allele_db, vector<vector<
 	}
 	for (int i(0); i < pd_tmp.size(); i += 2) {
 		Person known(pd_tmp[i], pd_tmp[i + 1]);
+		knowns_pd.push_back(known);
+	}
+	if (knowns_pn.size() == 0 && knowns_pd.size() == 0) {		// Ideally this locus would be ignored - Should not run this Locus
+		cout << "No Knowns exist in the Pn nor in the Pd." << endl;
+		Person known(wild, wild);
+		knowns_pn.push_back(known);
 		knowns_pd.push_back(known);
 	}
 	return true;
